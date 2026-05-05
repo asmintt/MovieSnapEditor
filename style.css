@@ -720,3 +720,105 @@ body {
   accent-color: var(--color-primary);
   flex-shrink: 0;
 }
+
+/* ===== レスポンシブ（スマートフォン） ===== */
+@media (max-width: 768px) {
+
+  /* ページ全体をスクロール可能に */
+  body {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* 3列グリッド → 1列縦積み */
+  .main-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    overflow: visible;
+    height: auto;
+  }
+
+  /* ===== サイドバー ===== */
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    overflow-y: visible;
+    padding: 16px;
+  }
+
+  /* 抽出ボタンをタップしやすく */
+  .btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+
+  /* ===== 動画エリア ===== */
+  .center-area {
+    overflow: visible;
+    background: #000;
+  }
+
+  /* 動画コンテナを16:9固定に */
+  .video-container {
+    flex: none;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  #videoPlayer {
+    width: 100%;
+    max-height: none;
+  }
+
+  /* 範囲設定エリア */
+  .range-controls {
+    padding: 12px;
+  }
+
+  /* 再生ボタンをタップしやすく */
+  .ctrl-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  /* 時刻入力を縦並びに */
+  .time-inputs {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .time-input {
+    width: 110px;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .time-set-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  /* ===== ギャラリー ===== */
+  .gallery-panel {
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    overflow: visible;
+  }
+
+  /* ギャラリーを自然な高さで展開（ページスクロールで見る） */
+  .gallery-grid {
+    flex: none;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* ===== ステータスバー ===== */
+  .status-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+}
