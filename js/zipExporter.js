@@ -32,47 +32,6 @@ class ZipExporter {
         saveAs(blob, `${baseName}_frames.zip`);
     }
 
-    static async saveAllIndividual(frames) {
-        if (!frames || frames.length === 0) return;
-
-        // File System Access API: フォルダを1回選ぶだけで全ファイルを書き込める（ブラウザのブロック回避）
-        if ('showDirectoryPicker' in window) {
-            let dirHandle;
-            try {
-                dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-            } catch (e) {
-                if (e.name === 'AbortError') return; // ユーザーがキャンセル
-                // APIが使えない場合は旧方式にフォールバック
-                dirHandle = null;
-            }
-
-            if (dirHandle) {
-                for (const frame of frames) {
-                    const fh = await dirHandle.getFileHandle(frame.fileName, { create: true });
-                    const ws = await fh.createWritable();
-                    const blob = await fetch(frame.dataUrl).then(r => r.blob());
-                    await ws.write(blob);
-                    await ws.close();
-                }
-                return;
-            }
-        }
-
-        // フォールバック（旧方式 / Firefox など）
-        for (let i = 0; i < frames.length; i++) {
-            const link = document.createElement('a');
-            link.href = frames[i].dataUrl;
-            link.download = frames[i].fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            if (i < frames.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, BULK_SAVE_DELAY_MS));
-            }
-        }
-    }
-
     static async burnTimestamp(frame) {
         if (!frame.timestamp) return frame;
 
@@ -92,15 +51,15 @@ class ZipExporter {
         const { width, height } = canvas;
         const fontSize = Math.max(16, Math.round(height * 0.04));
         const padding  = Math.round(fontSize * 0.5);
-        ctx.font = `bold ${fontSize}px 'Courier New', monospace`;
-        ctx.textBaseline = 'bottom';
+        ctx.font = `bold ${fontSize}px monospace`;
+        ctx.textBaseline = 'top';
         ctx.textAlign    = 'left';
         const tw = ctx.measureText(frame.timestamp).width;
         const x  = padding;
-        const y  = height - padding;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-        ctx.fillRect(x - padding / 2, y - fontSize - padding * 0.5, tw + padding * 2, fontSize + padding);
+        const y  = padding;
         ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x - padding / 2, y - padding / 2, tw + padding * 2, fontSize + padding);
+        ctx.fillStyle = '#000000';
         ctx.fillText(frame.timestamp, x, y);
 
         return { ...frame, dataUrl: canvas.toDataURL('image/jpeg', JPEG_QUALITY) };

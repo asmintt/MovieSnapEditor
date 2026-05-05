@@ -152,6 +152,9 @@ class VideoPlayer {
             this.videoMetadata.isLoaded = true;
             this.enableVideoControls();
 
+            // 最初のフレームをプレビューに表示（loadedmetadata 時点では黒画面のため）
+            this.videoElement.currentTime = 0;
+
             if (this.onVideoLoadedCallback) {
                 this.onVideoLoadedCallback(this.videoMetadata);
             }

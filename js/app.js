@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const durationDisp        = document.getElementById('durationDisplay');
     const extractBtn          = document.getElementById('extractBtn');
     const saveZipBtn          = document.getElementById('saveZipBtn');
-    const saveBulkBtn         = document.getElementById('saveBulkBtn');
     const selectAllBtn        = document.getElementById('selectAllBtn');
     const deselectAllBtn      = document.getElementById('deselectAllBtn');
     const galleryGrid         = document.getElementById('galleryGrid');
@@ -25,8 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const intervalBtns        = document.querySelectorAll('.interval-btn');
     const customIntervalRow   = document.getElementById('customIntervalRow');
     const customIntervalInput = document.getElementById('customIntervalInput');
-    const tabBtns             = document.querySelectorAll('.tab-btn');
-    const tabPanels           = document.querySelectorAll('.tab-panel');
     const includeTimestampCheck = document.getElementById('includeTimestampCheck');
 
     // --- モジュール初期化 ---
@@ -38,18 +35,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageGallery   = new ImageGallery(galleryGrid, selectionCount);
 
     let currentVideoFileName = '';
-    let selectedInterval = 0.1;
+    let selectedInterval = 0.2;
     let isExtracting = false;
 
-    // --- タブ切り替え ---
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            tabBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            tabPanels.forEach(p => p.classList.add('hidden'));
-            document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
-        });
-    });
+    const CUSTOM_INTERVAL_KEY = 'mse_customInterval';
+
+    // 保存済みカスタム値を復元
+    const savedCustom = parseFloat(localStorage.getItem(CUSTOM_INTERVAL_KEY));
+    if (!isNaN(savedCustom) && savedCustom >= 0.01) {
+        customIntervalInput.value = savedCustom;
+    }
 
     // --- 抽出間隔ボタン ---
     intervalBtns.forEach(btn => {
@@ -58,11 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
 
             if (btn.dataset.interval === 'custom') {
-                customIntervalRow.classList.remove('hidden');
                 const val = parseFloat(customIntervalInput.value);
                 if (!isNaN(val) && val >= 0.01) selectedInterval = val;
             } else {
-                customIntervalRow.classList.add('hidden');
                 selectedInterval = parseFloat(btn.dataset.interval);
             }
         });
@@ -70,7 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     customIntervalInput.addEventListener('input', () => {
         const val = parseFloat(customIntervalInput.value);
-        if (!isNaN(val) && val >= 0.01) selectedInterval = val;
+        if (!isNaN(val) && val >= 0.01) {
+            selectedInterval = val;
+            localStorage.setItem(CUSTOM_INTERVAL_KEY, String(val));
+        }
     });
 
     // --- ファイル読み込み ---
@@ -149,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
         extractBtn.textContent = 'キャンセル';
         extractBtn.classList.add('btn-cancel');
         saveZipBtn.disabled = true;
-        saveBulkBtn.disabled = true;
         extractionProgress.classList.remove('hidden');
         imageGallery.clear();
         updateProgress(0, count);
@@ -204,18 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus(`ZIP保存完了 (${frames.length}枚)`);
     });
 
-    saveBulkBtn.addEventListener('click', async () => {
-        const frames = imageGallery.getSelectedFrames();
-        if (frames.length === 0) {
-            setStatus('保存する画像が選択されていません');
-            return;
-        }
-        setStatus(`${frames.length}枚をダウンロード中...`);
-        const prepared = await prepareFramesForExport(frames);
-        await ZipExporter.saveAllIndividual(prepared);
-        setStatus(`一括保存完了 (${frames.length}枚)`);
-    });
-
     // --- ギャラリー選択ボタン ---
     selectAllBtn.addEventListener('click', () => {
         imageGallery.selectAll();
@@ -229,8 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     imageGallery.onSelectionChange(({ selected }) => {
         if (!isExtracting) {
-            saveZipBtn.disabled  = selected === 0;
-            saveBulkBtn.disabled = selected === 0;
+            saveZipBtn.disabled = selected === 0;
         }
     });
 
@@ -270,8 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateSaveButtons() {
         const { selected } = imageGallery.getCounts();
-        saveZipBtn.disabled  = selected === 0;
-        saveBulkBtn.disabled = selected === 0;
+        saveZipBtn.disabled = selected === 0;
     }
 
     function updateProgress(current, total) {
