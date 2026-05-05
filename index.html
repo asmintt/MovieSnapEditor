@@ -72,6 +72,34 @@
           <button id="saveZipBtn" class="btn btn-secondary" disabled>ZIP保存</button>
           <button id="saveBulkBtn" class="btn btn-secondary" disabled>一括保存</button>
         </div>
+
+        <div class="section-divider"></div>
+
+        <div class="section">
+          <div class="section-label">動画出力時の表示間隔</div>
+          <div class="interval-buttons" id="slideIntervalButtons">
+            <button class="slide-interval-btn active" data-interval="3">3秒</button>
+            <button class="slide-interval-btn" data-interval="5">5秒</button>
+            <button class="slide-interval-btn" data-interval="10">10秒</button>
+            <button class="slide-interval-btn" data-interval="custom">カスタム</button>
+          </div>
+          <div class="custom-interval-row hidden" id="customSlideIntervalRow">
+            <input type="number" id="customSlideIntervalInput"
+                   step="0.1" min="0.1" max="60" placeholder="例: 2.5">
+            <span class="unit-label">秒</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div id="videoExportProgress" class="extraction-progress hidden">
+            <div class="progress-bar">
+              <div class="progress-fill" id="videoProgressFill"></div>
+            </div>
+            <span id="videoProgressText" class="progress-text"></span>
+          </div>
+          <button id="exportVideoBtn" class="btn btn-primary" disabled>動画を出力する</button>
+          <p class="format-guide">ℹ Chrome: .webm形式 / Safari: .mp4形式で保存されます</p>
+        </div>
       </div>
     </aside>
 
@@ -160,6 +188,7 @@
   <script src="js/zipExporter.js"></script>
   <script src="js/frameExtractor.js"></script>
   <script src="js/imageGallery.js"></script>
+  <script src="js/videoExporter.js"></script>
   <script src="js/app.js"></script>
 
 </body>

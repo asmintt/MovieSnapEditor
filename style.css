@@ -726,3 +726,39 @@ body {
 .hidden {
   display: none !important;
 }
+
+/* ===== 動画出力セクション ===== */
+.section-divider {
+  border-top: 1px solid var(--color-border);
+  margin: 4px 0 16px;
+}
+
+.slide-interval-btn {
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--color-text);
+}
+
+.slide-interval-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.slide-interval-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.format-guide {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}

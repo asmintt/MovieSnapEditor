@@ -28,6 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabBtns          = document.querySelectorAll('.tab-btn');
     const tabPanels        = document.querySelectorAll('.tab-panel');
 
+    // 動画出力
+    const slideIntervalBtns       = document.querySelectorAll('.slide-interval-btn');
+    const customSlideIntervalRow  = document.getElementById('customSlideIntervalRow');
+    const customSlideIntervalInput = document.getElementById('customSlideIntervalInput');
+    const exportVideoBtn          = document.getElementById('exportVideoBtn');
+    const videoExportProgress     = document.getElementById('videoExportProgress');
+    const videoProgressFill       = document.getElementById('videoProgressFill');
+    const videoProgressText       = document.getElementById('videoProgressText');
+
     // --- モジュール初期化 ---
     fileHandler.init();
     videoPlayer.init();
@@ -38,6 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentVideoFileName = '';
     let selectedInterval = 0.1;
+    let selectedSlideInterval = 3;
+    let isExportingVideo = false;
     let isExtracting = false;
 
     // --- タブ切り替え ---
@@ -221,8 +232,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
     imageGallery.onSelectionChange(({ selected }) => {
         if (!isExtracting) {
-            saveZipBtn.disabled  = selected === 0;
-            saveBulkBtn.disabled = selected === 0;
+            saveZipBtn.disabled     = selected === 0;
+            saveBulkBtn.disabled    = selected === 0;
+            exportVideoBtn.disabled = selected === 0;
+        }
+    });
+
+    // --- 表示間隔ボタン（動画出力）---
+    slideIntervalBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            slideIntervalBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (btn.dataset.interval === 'custom') {
+                customSlideIntervalRow.classList.remove('hidden');
+                const val = parseFloat(customSlideIntervalInput.value);
+                if (!isNaN(val) && val >= 0.1) selectedSlideInterval = val;
+            } else {
+                customSlideIntervalRow.classList.add('hidden');
+                selectedSlideInterval = parseFloat(btn.dataset.interval);
+            }
+        });
+    });
+
+    customSlideIntervalInput.addEventListener('input', () => {
+        const val = parseFloat(customSlideIntervalInput.value);
+        if (!isNaN(val) && val >= 0.1) selectedSlideInterval = val;
+    });
+
+    // --- 動画出力ボタン ---
+    exportVideoBtn.addEventListener('click', async () => {
+        const frames = imageGallery.getSelectedFrames();
+        if (frames.length === 0) {
+            setStatus('動画にする画像が選択されていません');
+            return;
+        }
+        if (selectedSlideInterval < 0.1) {
+            setStatus('表示間隔を正しく設定してください');
+            return;
+        }
+
+        isExportingVideo = true;
+        exportVideoBtn.disabled = true;
+        exportVideoBtn.textContent = '出力中...';
+        videoExportProgress.classList.remove('hidden');
+        updateVideoProgress(0, frames.length);
+        setStatus(`動画を出力中... (0/${frames.length}枚)`);
+
+        try {
+            await VideoExporter.export(frames, selectedSlideInterval, currentVideoFileName, {
+                onProgress: (current, total) => {
+                    updateVideoProgress(current, total);
+                    setStatus(`動画を出力中... (${current}/${total}枚)`);
+                }
+            });
+            setStatus(`動画の出力が完了しました (${frames.length}枚 × ${selectedSlideInterval}秒)`);
+        } catch (e) {
+            logError('動画出力エラー', e);
+            setStatus('動画の出力中にエラーが発生しました');
+        } finally {
+            isExportingVideo = false;
+            exportVideoBtn.disabled = frames.length === 0;
+            exportVideoBtn.textContent = '動画を出力する';
+            videoExportProgress.classList.add('hidden');
         }
     });
 
@@ -262,8 +333,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateSaveButtons() {
         const { selected } = imageGallery.getCounts();
-        saveZipBtn.disabled  = selected === 0;
-        saveBulkBtn.disabled = selected === 0;
+        saveZipBtn.disabled     = selected === 0;
+        saveBulkBtn.disabled    = selected === 0;
+        exportVideoBtn.disabled = selected === 0;
+    }
+
+    function updateVideoProgress(current, total) {
+        const pct = total > 0 ? (current / total) * 100 : 0;
+        videoProgressFill.style.width = `${pct}%`;
+        videoProgressText.textContent = total > 0 ? `${current} / ${total} 枚` : '';
     }
 
     function updateProgress(current, total) {
