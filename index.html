@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MovieSnapEditor</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+
+  <header class="app-header">
+    <h1>MovieSnapEditor</h1>
+  </header>
+
+  <main class="main-content">
+
+    <!-- 左サイドバー -->
+    <aside class="sidebar">
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="file">ファイル・動画設定</button>
+        <button class="tab-btn" data-tab="extract">画像抽出設定</button>
+      </div>
+
+      <!-- タブ1: ファイル・動画設定 -->
+      <div class="tab-panel" id="tab-file">
+        <div class="section">
+          <div class="section-label">1. 動画ファイル</div>
+          <label class="file-label" for="videoFileInput">
+            <div class="file-drop-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.89L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+              </svg>
+            </div>
+            <div class="file-drop-text">動画ファイルをドロップ<br>またはクリックして選択</div>
+            <div class="file-formats">MP4 / WEBM / MOV / AVI / MKV</div>
+          </label>
+          <input type="file" id="videoFileInput" accept="video/*">
+          <div id="selectedFileName" class="selected-file-name"></div>
+        </div>
+      </div>
+
+      <!-- タブ2: 画像抽出設定 -->
+      <div class="tab-panel hidden" id="tab-extract">
+        <div class="section">
+          <div class="section-label">抽出間隔</div>
+          <div class="interval-buttons">
+            <button class="interval-btn active" data-interval="0.1">0.1秒</button>
+            <button class="interval-btn" data-interval="0.5">0.5秒</button>
+            <button class="interval-btn" data-interval="1.0">1秒</button>
+            <button class="interval-btn" data-interval="custom">カスタム</button>
+          </div>
+          <div class="custom-interval-row hidden" id="customIntervalRow">
+            <input type="number" id="customIntervalInput"
+                   step="0.01" min="0.01" max="60" placeholder="例: 0.25">
+            <span class="unit-label">秒</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div id="extractionProgress" class="extraction-progress hidden">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span id="progressText" class="progress-text"></span>
+          </div>
+        </div>
+
+        <div class="section action-buttons">
+          <button id="extractBtn" class="btn btn-primary" disabled>抽出</button>
+          <button id="saveZipBtn" class="btn btn-secondary" disabled>ZIP保存</button>
+          <button id="saveBulkBtn" class="btn btn-secondary" disabled>一括保存</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- センターエリア -->
+    <section class="center-area">
+      <div class="video-container">
+        <video id="videoPlayer" preload="metadata"></video>
+      </div>
+
+      <div class="range-controls">
+        <div class="range-controls-header">
+          <span class="range-controls-title">2. 動画範囲設定</span>
+        </div>
+
+        <div class="playback-buttons">
+          <button id="playButton" class="ctrl-btn" disabled>再生</button>
+          <button id="pauseButton" class="ctrl-btn" disabled>停止</button>
+          <button id="resetButton" class="ctrl-btn" disabled>開始時刻に戻る</button>
+          <button id="playRangeButton" class="ctrl-btn" disabled>選択範囲を再生</button>
+          <button id="resetRangeButton" class="ctrl-btn" disabled>全体</button>
+        </div>
+
+        <div class="time-inputs">
+          <div class="time-input-group">
+            <span class="time-label">開始</span>
+            <input type="text" id="startTimeInput" class="time-input" value="00:00.00" disabled>
+            <button id="setStartTimeButton" class="time-set-btn" disabled>現在</button>
+          </div>
+          <div class="time-input-group">
+            <span class="time-label">終了</span>
+            <input type="text" id="endTimeInput" class="time-input" value="00:00.00" disabled>
+            <button id="setEndTimeButton" class="time-set-btn" disabled>現在</button>
+          </div>
+          <div class="range-duration-group">
+            <span class="range-duration-label">範囲</span>
+            <span id="rangeDisplay" class="range-duration">--</span>
+          </div>
+        </div>
+
+        <div class="slider-row">
+          <span id="currentTimeDisplay" class="time-display">00:00.00</span>
+          <input type="range" id="timeSlider" class="time-slider" min="0" max="100" value="0" step="0.01" disabled>
+          <span id="durationDisplay" class="time-display">00:00.00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右パネル: 画像ギャラリー -->
+    <aside class="gallery-panel">
+      <div class="gallery-header">
+        <span class="gallery-title">画像ギャラリー</span>
+        <span id="selectionCount" class="selection-count">0/0枚選択中</span>
+      </div>
+      <div class="gallery-controls">
+        <button id="selectAllBtn" class="btn-small">全選択</button>
+        <button id="deselectAllBtn" class="btn-small">全解除</button>
+      </div>
+      <div id="galleryGrid" class="gallery-grid">
+        <div class="gallery-placeholder">動画を選択して<br>抽出してください</div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- 画像拡大モーダル -->
+  <div id="imageModal" class="image-modal hidden">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose">×</button>
+      <img id="modalImage" src="" alt="">
+      <div id="modalTimestamp" class="modal-timestamp"></div>
+    </div>
+  </div>
+
+  <footer class="status-bar">
+    <span id="statusText">動画ファイルを選択してください</span>
+  </footer>
+
+  <!-- JS: 流用ファイル -->
+  <script src="js/utils.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/fileHandler.js"></script>
+  <script src="js/videoPlayer.js"></script>
+  <script src="js/timeRangeManager.js"></script>
+  <!-- JS: 新規ファイル -->
+  <script src="js/zipExporter.js"></script>
+  <script src="js/frameExtractor.js"></script>
+  <script src="js/imageGallery.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
