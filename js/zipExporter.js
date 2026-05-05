@@ -1,8 +1,9 @@
 /**
- * zipExporter.js - ZIP保存・一括保存処理
+ * zipExporter.js - ZIP保存・一括保存・タイムスタンプ焼き込み
  */
 
 class ZipExporter {
+
     static generateFileName(videoFileName, timeSeconds) {
         const base = getFileNameWithoutExtension(videoFileName) || 'frame';
         const totalCentis = Math.round(timeSeconds * 100);
@@ -34,6 +35,30 @@ class ZipExporter {
     static async saveAllIndividual(frames) {
         if (!frames || frames.length === 0) return;
 
+        // File System Access API: フォルダを1回選ぶだけで全ファイルを書き込める（ブラウザのブロック回避）
+        if ('showDirectoryPicker' in window) {
+            let dirHandle;
+            try {
+                dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+            } catch (e) {
+                if (e.name === 'AbortError') return; // ユーザーがキャンセル
+                // APIが使えない場合は旧方式にフォールバック
+                dirHandle = null;
+            }
+
+            if (dirHandle) {
+                for (const frame of frames) {
+                    const fh = await dirHandle.getFileHandle(frame.fileName, { create: true });
+                    const ws = await fh.createWritable();
+                    const blob = await fetch(frame.dataUrl).then(r => r.blob());
+                    await ws.write(blob);
+                    await ws.close();
+                }
+                return;
+            }
+        }
+
+        // フォールバック（旧方式 / Firefox など）
         for (let i = 0; i < frames.length; i++) {
             const link = document.createElement('a');
             link.href = frames[i].dataUrl;
@@ -46,6 +71,39 @@ class ZipExporter {
                 await new Promise(resolve => setTimeout(resolve, BULK_SAVE_DELAY_MS));
             }
         }
+    }
+
+    static async burnTimestamp(frame) {
+        if (!frame.timestamp) return frame;
+
+        const img = await new Promise((resolve, reject) => {
+            const i = new Image();
+            i.onload  = () => resolve(i);
+            i.onerror = reject;
+            i.src = frame.dataUrl;
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        const { width, height } = canvas;
+        const fontSize = Math.max(16, Math.round(height * 0.04));
+        const padding  = Math.round(fontSize * 0.5);
+        ctx.font = `bold ${fontSize}px 'Courier New', monospace`;
+        ctx.textBaseline = 'bottom';
+        ctx.textAlign    = 'left';
+        const tw = ctx.measureText(frame.timestamp).width;
+        const x  = padding;
+        const y  = height - padding;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.fillRect(x - padding / 2, y - fontSize - padding * 0.5, tw + padding * 2, fontSize + padding);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(frame.timestamp, x, y);
+
+        return { ...frame, dataUrl: canvas.toDataURL('image/jpeg', JPEG_QUALITY) };
     }
 }
 
