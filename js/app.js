@@ -137,9 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (count >= WARN_FRAMES) {
-            if (!confirm(`${count}枚のフレームを抽出します。続けますか？`)) return;
-        }
+        if (!confirm(`画像枚数：${count}枚\n実行しますか？`)) return;
 
         isExtracting = true;
         extractBtn.textContent = 'キャンセル';
