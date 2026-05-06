@@ -23,7 +23,27 @@
 
   <header class="app-header">
     <h1>MovieSnapEditor</h1>
-    <button class="reload-btn" onclick="window.location.reload()" title="リロード">↺</button>
+    <div class="header-actions">
+      <button id="headerExtractBtn" class="header-btn" title="抽出" disabled>
+        <svg class="icon-default" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+          <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+          <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+          <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+        </svg>
+        <svg class="icon-cancel" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <button id="headerSaveZipBtn" class="header-btn" title="選択画像の一括保存（ZIP）" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+      <button class="reload-btn" onclick="window.location.reload()" title="リロード">↺</button>
+    </div>
   </header>
 
   <main class="main-content">

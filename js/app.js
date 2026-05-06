@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const customIntervalRow   = document.getElementById('customIntervalRow');
     const customIntervalInput = document.getElementById('customIntervalInput');
     const includeTimestampCheck = document.getElementById('includeTimestampCheck');
+    const headerExtractBtn     = document.getElementById('headerExtractBtn');
+    const headerSaveZipBtn     = document.getElementById('headerSaveZipBtn');
+    const reloadBtnEl          = document.querySelector('.reload-btn');
 
     // --- モジュール初期化 ---
     fileHandler.init();
@@ -235,6 +238,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 v.paused ? videoPlayer.playVideo() : videoPlayer.pauseVideo();
             }
         }
+    });
+
+    // --- ヘッダーボタン ---
+    // クリックをサイドバーの元ボタンに委譲
+    headerExtractBtn.addEventListener('click', () => extractBtn.click());
+    headerSaveZipBtn.addEventListener('click', () => saveZipBtn.click());
+
+    // disabled / is-cancel 状態を元ボタンから同期
+    function syncHeaderBtn(source, mirror) {
+        mirror.disabled = source.disabled;
+        new MutationObserver(() => {
+            mirror.disabled = source.disabled;
+            mirror.classList.toggle('is-cancel', source.classList.contains('btn-cancel'));
+        }).observe(source, { attributes: true, attributeFilter: ['disabled', 'class'] });
+    }
+    syncHeaderBtn(extractBtn, headerExtractBtn);
+    syncHeaderBtn(saveZipBtn, headerSaveZipBtn);
+
+    // フッタートゥールチップ（マウスオーバー時に説明を表示）
+    let savedStatus = '';
+    const tooltips = [
+        [headerExtractBtn, '抽出: 設定した間隔でフレームを抽出します', 'キャンセル: 抽出を中断します'],
+        [headerSaveZipBtn, '一括保存: 選択中の画像をZIPでダウンロードします', null],
+        [reloadBtnEl,      'リロード: アプリをリセットします（抽出データが消えます）', null],
+    ];
+    tooltips.forEach(([btn, desc, cancelDesc]) => {
+        btn.addEventListener('mouseenter', () => {
+            savedStatus = statusText.textContent;
+            statusText.textContent = (cancelDesc && isExtracting) ? cancelDesc : desc;
+        });
+        btn.addEventListener('mouseleave', () => {
+            statusText.textContent = savedStatus;
+        });
     });
 
     // --- ヘルパー ---

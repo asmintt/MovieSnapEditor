@@ -72,6 +72,56 @@ body {
   opacity: 1;
 }
 
+/* ===== ヘッダーアクションボタン ===== */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.4);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.header-btn:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.header-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.header-btn.is-cancel {
+  border-color: #ef4444;
+  color: #ef4444;
+  opacity: 1;
+}
+
+.header-btn .icon-cancel {
+  display: none;
+}
+
+.header-btn.is-cancel .icon-default {
+  display: none;
+}
+
+.header-btn.is-cancel .icon-cancel {
+  display: flex;
+}
+
 /* ===== メインコンテンツ（3カラム）===== */
 .main-content {
   display: grid;
