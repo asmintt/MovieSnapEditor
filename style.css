@@ -495,6 +495,25 @@ body {
   margin-bottom: 0;
 }
 
+.controls-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.frame-count-display {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#frameCountValue {
+  font-weight: 700;
+  color: var(--color-primary-hover);
+}
+
 /* 動画範囲設定 */
 .range-controls {
   background: var(--color-panel);

@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const headerSaveZipBtn     = document.getElementById('headerSaveZipBtn');
     const reloadBtnEl          = document.querySelector('.reload-btn');
     const videoDropOverlay     = document.getElementById('videoDropOverlay');
+    const frameCountValue      = document.getElementById('frameCountValue');
 
     // --- モジュール初期化 ---
     fileHandler.init();
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 selectedInterval = parseFloat(btn.dataset.interval);
             }
+            updateFrameCount();
         });
     });
 
@@ -70,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isNaN(val) && val >= 0.01) {
             selectedInterval = val;
             localStorage.setItem(CUSTOM_INTERVAL_KEY, String(val));
+            updateFrameCount();
         }
     });
 
@@ -91,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         timeSlider.disabled = false;
         if (videoDropOverlay) videoDropOverlay.classList.add('hidden');
         updateExtractBtn();
+        updateFrameCount();
         setStatus(`読み込み完了: ${currentVideoFileName}`);
     });
 
@@ -109,8 +113,11 @@ document.addEventListener('DOMContentLoaded', () => {
         videoPlayer.setCurrentTime(parseFloat(timeSlider.value));
     });
 
-    // --- 範囲変更時に抽出ボタン状態更新 ---
-    timeRangeManager.onRangeChanged(() => updateExtractBtn());
+    // --- 範囲変更時に抽出ボタン状態・枚数更新 ---
+    timeRangeManager.onRangeChanged(() => {
+        updateExtractBtn();
+        updateFrameCount();
+    });
 
     // --- 抽出ボタン ---
     extractBtn.addEventListener('click', async () => {
@@ -142,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (!confirm(`画像枚数：${count}枚\n実行しますか？`)) return;
+        if (!confirm('実行しますか？')) return;
 
         isExtracting = true;
         extractBtn.textContent = 'キャンセル';
@@ -276,6 +283,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- ヘルパー ---
+    function updateFrameCount() {
+        if (!frameCountValue) return;
+        if (!videoPlayer.isVideoLoaded()) {
+            frameCountValue.textContent = '--';
+            return;
+        }
+        const { startTime, endTime } = timeRangeManager.getRangeSettings();
+        const count = frameExtractor.calculateFrameCount(startTime, endTime, selectedInterval);
+        frameCountValue.textContent = count > 0 ? count : '--';
+    }
+
     function updateExtractBtn() {
         if (!videoPlayer.isVideoLoaded()) {
             extractBtn.disabled = true;

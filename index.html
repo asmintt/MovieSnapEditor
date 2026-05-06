@@ -78,6 +78,7 @@
             <input type="checkbox" id="includeTimestampCheck" checked>
             <span>タイムスタンプ</span>
           </label>
+          <span class="controls-label">抽出間隔：</span>
           <div class="interval-buttons">
             <button class="interval-btn active" data-interval="0.2">0.2秒</button>
             <button class="interval-btn" data-interval="0.5">0.5秒</button>
@@ -93,6 +94,7 @@
         <div class="controls-separator"></div>
         <div class="controls-group controls-group--actions">
           <button id="extractBtn" class="btn btn-primary" disabled>抽出</button>
+          <span class="frame-count-display">抽出枚数：<span id="frameCountValue">--</span>枚</span>
           <button id="saveZipBtn" class="btn btn-secondary" disabled>一括保存（ZIP）</button>
         </div>
         <div id="extractionProgress" class="extraction-progress hidden">
