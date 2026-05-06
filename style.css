@@ -512,6 +512,9 @@ body {
 #frameCountValue {
   font-weight: 700;
   color: var(--color-primary-hover);
+  display: inline-block;
+  width: 3ch;
+  text-align: right;
 }
 
 /* 動画範囲設定 */
