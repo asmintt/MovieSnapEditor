@@ -58,11 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
 
             if (btn.dataset.interval === 'custom') {
-                customIntervalRow.classList.remove('hidden');
                 const val = parseFloat(customIntervalInput.value);
                 if (!isNaN(val) && val >= 0.01) selectedInterval = val;
             } else {
-                customIntervalRow.classList.add('hidden');
                 selectedInterval = parseFloat(btn.dataset.interval);
             }
             updateFrameCount();
