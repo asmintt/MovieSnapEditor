@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const headerExtractBtn     = document.getElementById('headerExtractBtn');
     const headerSaveZipBtn     = document.getElementById('headerSaveZipBtn');
     const reloadBtnEl          = document.querySelector('.reload-btn');
+    const videoDropOverlay     = document.getElementById('videoDropOverlay');
 
     // --- モジュール初期化 ---
     fileHandler.init();
@@ -88,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         timeSlider.max = metadata.duration;
         timeSlider.value = 0;
         timeSlider.disabled = false;
+        if (videoDropOverlay) videoDropOverlay.classList.add('hidden');
         updateExtractBtn();
         setStatus(`読み込み完了: ${currentVideoFileName}`);
     });

@@ -10,7 +10,6 @@ class TimeRangeManager {
         this.setEndTimeButton = null;
         this.rangeDisplay = null;
         this.playRangeButton = null;
-        this.resetRangeButton = null;
         this.includeAudioCheckbox = null;
 
         this.rangeSettings = {
@@ -42,7 +41,6 @@ class TimeRangeManager {
         this.setEndTimeButton = getElementSafely('setEndTimeButton');
         this.rangeDisplay = getElementSafely('rangeDisplay');
         this.playRangeButton = getElementSafely('playRangeButton');
-        this.resetRangeButton = getElementSafely('resetRangeButton');
         // Web版HTMLには includeAudioCheckbox が存在しない場合がある
         this.includeAudioCheckbox = document.getElementById('includeAudioCheckbox') || null;
     }
@@ -81,12 +79,6 @@ class TimeRangeManager {
         if (this.playRangeButton) {
             this.playRangeButton.addEventListener('click', () => {
                 this.playSelectedRange();
-            });
-        }
-
-        if (this.resetRangeButton) {
-            this.resetRangeButton.addEventListener('click', () => {
-                this.resetToFullRange();
             });
         }
 
@@ -242,7 +234,7 @@ class TimeRangeManager {
         const controlIds = [
             'startTimeInput', 'endTimeInput',
             'setStartTimeButton', 'setEndTimeButton',
-            'playRangeButton', 'resetRangeButton'
+            'playRangeButton'
         ];
         setMultipleElementsEnabled(controlIds, enabled);
         if (this.includeAudioCheckbox) {

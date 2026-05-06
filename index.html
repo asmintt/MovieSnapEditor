@@ -48,47 +48,53 @@
 
   <main class="main-content">
 
-    <!-- 左サイドバー -->
-    <aside class="sidebar">
+    <!-- センターエリア -->
+    <section class="center-area">
 
-      <div class="section">
-        <div class="section-label">1. 動画ファイル</div>
-        <label class="file-label" for="videoFileInput">
-          <div class="file-drop-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <!-- 動画プレビュー（ドロップゾーン兼用） -->
+      <div class="video-container" id="videoContainer">
+        <video id="videoPlayer" preload="metadata"></video>
+        <div id="videoDropOverlay" class="video-drop-overlay">
+          <div class="drop-overlay-inner">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
               <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.89L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
             </svg>
+            <p class="drop-overlay-text">動画ファイルをドロップ<br>またはボタンで選択</p>
+            <p class="drop-overlay-formats">MP4 / WEBM / MOV / AVI / MKV</p>
           </div>
-          <div class="file-drop-text">動画ファイルをドロップ<br>またはクリックして選択</div>
-          <div class="file-formats">MP4 / WEBM / MOV / AVI / MKV</div>
-        </label>
+        </div>
+      </div>
+
+      <!-- コントロールバー -->
+      <div class="controls-bar">
         <input type="file" id="videoFileInput" accept="video/*">
-        <div id="selectedFileName" class="selected-file-name"></div>
-      </div>
-
-      <div class="section">
-        <label class="checkbox-label">
-          <input type="checkbox" id="includeTimestampCheck" checked>
-          <span>タイムスタンプを含める</span>
-        </label>
-      </div>
-
-      <div class="section">
-        <div class="section-label">抽出間隔</div>
-        <div class="interval-buttons">
-          <button class="interval-btn active" data-interval="0.2">0.2秒</button>
-          <button class="interval-btn" data-interval="0.5">0.5秒</button>
-          <button class="interval-btn" data-interval="1.0">1秒</button>
-          <button class="interval-btn" data-interval="custom">カスタム</button>
+        <div class="controls-group controls-group--file">
+          <button id="selectVideoButton" class="btn-select-file">動画ファイルを選択</button>
+          <span id="selectedFileName" class="selected-file-name"></span>
         </div>
-        <div class="custom-interval-row" id="customIntervalRow">
-          <input type="number" id="customIntervalInput"
-                 step="0.01" min="0.01" max="60" placeholder="例: 0.25">
-          <span class="unit-label">秒</span>
+        <div class="controls-separator"></div>
+        <div class="controls-group controls-group--options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeTimestampCheck" checked>
+            <span>タイムスタンプ</span>
+          </label>
+          <div class="interval-buttons">
+            <button class="interval-btn active" data-interval="0.2">0.2秒</button>
+            <button class="interval-btn" data-interval="0.5">0.5秒</button>
+            <button class="interval-btn" data-interval="1.0">1秒</button>
+            <button class="interval-btn" data-interval="custom">カスタム</button>
+          </div>
+          <div class="custom-interval-row hidden" id="customIntervalRow">
+            <input type="number" id="customIntervalInput"
+                   step="0.01" min="0.01" max="60" placeholder="例: 0.25">
+            <span class="unit-label">秒</span>
+          </div>
         </div>
-      </div>
-
-      <div class="section">
+        <div class="controls-separator"></div>
+        <div class="controls-group controls-group--actions">
+          <button id="extractBtn" class="btn btn-primary" disabled>抽出</button>
+          <button id="saveZipBtn" class="btn btn-secondary" disabled>一括保存（ZIP）</button>
+        </div>
         <div id="extractionProgress" class="extraction-progress hidden">
           <div class="progress-bar">
             <div class="progress-fill" id="progressFill"></div>
@@ -97,20 +103,7 @@
         </div>
       </div>
 
-      <div class="section action-buttons">
-        <button id="extractBtn" class="btn btn-primary" disabled>抽出</button>
-        <button id="saveZipBtn" class="btn btn-secondary" disabled>選択画像の一括保存（ZIP）</button>
-        <p class="save-guide-text">抽出した画像はブラウザ外へドラッグ＆ドロップで直接保存も可</p>
-      </div>
-
-    </aside>
-
-    <!-- センターエリア -->
-    <section class="center-area">
-      <div class="video-container">
-        <video id="videoPlayer" preload="metadata"></video>
-      </div>
-
+      <!-- 2. 動画範囲設定 -->
       <div class="range-controls">
         <div class="range-controls-header">
           <span class="range-controls-title">2. 動画範囲設定</span>
@@ -119,9 +112,7 @@
         <div class="playback-buttons">
           <button id="playButton" class="ctrl-btn" disabled>再生</button>
           <button id="pauseButton" class="ctrl-btn" disabled>停止</button>
-          <button id="resetButton" class="ctrl-btn" disabled>開始時刻に戻る</button>
           <button id="playRangeButton" class="ctrl-btn" disabled>選択範囲を再生</button>
-          <button id="resetRangeButton" class="ctrl-btn" disabled>全体</button>
         </div>
 
         <div class="time-inputs">

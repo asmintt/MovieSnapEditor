@@ -7,7 +7,6 @@ class VideoPlayer {
         this.videoElement = null;
         this.playButton = null;
         this.pauseButton = null;
-        this.resetButton = null;
 
         this.videoMetadata = {
             duration: 0,
@@ -73,16 +72,12 @@ class VideoPlayer {
     setupPlaybackButtons() {
         this.playButton = getElementSafely('playButton');
         this.pauseButton = getElementSafely('pauseButton');
-        this.resetButton = getElementSafely('resetButton');
 
         if (this.playButton) {
             this.playButton.addEventListener('click', () => this.playVideo());
         }
         if (this.pauseButton) {
             this.pauseButton.addEventListener('click', () => this.pauseVideo());
-        }
-        if (this.resetButton) {
-            this.resetButton.addEventListener('click', () => this.resetVideo());
         }
 
         logDebug('VideoPlayer: 再生ボタン設定完了');
@@ -267,14 +262,12 @@ class VideoPlayer {
     enableVideoControls() {
         if (this.playButton) this.playButton.disabled = false;
         if (this.pauseButton) this.pauseButton.disabled = false;
-        if (this.resetButton) this.resetButton.disabled = false;
         logDebug('VideoPlayer: 再生ボタンを有効化');
     }
 
     disableVideoControls() {
         if (this.playButton) this.playButton.disabled = true;
         if (this.pauseButton) this.pauseButton.disabled = true;
-        if (this.resetButton) this.resetButton.disabled = true;
     }
 
     setCurrentTime(seconds) {

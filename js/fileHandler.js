@@ -36,7 +36,8 @@ class FileHandler {
         this.videoFileInput = getElementSafely('videoFileInput');
         this.selectVideoButton = getElementSafely('selectVideoButton');
         this.selectedFileName = getElementSafely('selectedFileName');
-        this.fileLabel = document.querySelector('.file-label');
+        this.videoContainer = getElementSafely('videoContainer');
+        this.videoDropOverlay = getElementSafely('videoDropOverlay');
 
         if (!this.videoFileInput) {
             throw new Error('videoFileInput要素が見つかりません');
@@ -56,13 +57,20 @@ class FileHandler {
             });
         }
 
-        if (this.fileLabel) {
+        if (this.videoDropOverlay) {
+            this.videoDropOverlay.addEventListener('click', () => {
+                this.openFileDialog();
+            });
+        }
+
+        if (this.videoContainer) {
             this.setupDragAndDrop();
         }
     }
 
     setupDragAndDrop() {
-        const dropArea = this.fileLabel;
+        const dropArea = this.videoContainer;
+        const overlay = this.videoDropOverlay;
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropArea.addEventListener(eventName, (e) => {
@@ -73,13 +81,13 @@ class FileHandler {
 
         ['dragenter', 'dragover'].forEach(eventName => {
             dropArea.addEventListener(eventName, () => {
-                dropArea.classList.add('drag-over');
+                if (overlay) overlay.classList.add('drag-over');
             });
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
             dropArea.addEventListener(eventName, () => {
-                dropArea.classList.remove('drag-over');
+                if (overlay) overlay.classList.remove('drag-over');
             });
         });
 
