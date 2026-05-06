@@ -382,9 +382,7 @@ body {
   overflow: hidden;
   background: #000;
   min-height: 0;
-  position: sticky;
-  top: 44px;
-  z-index: 50;
+  position: relative;
 }
 
 #videoPlayer {
@@ -948,11 +946,14 @@ body {
     background: #000;
   }
 
-  /* 動画コンテナを16:9固定に */
+  /* 動画コンテナを16:9固定・スクロール時上部に固定 */
   .video-container {
     flex: none;
     width: 100%;
     aspect-ratio: 16 / 9;
+    position: sticky;
+    top: 44px;
+    z-index: 50;
   }
 
   #videoPlayer {
