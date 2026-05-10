@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const customIntervalRow   = document.getElementById('customIntervalRow');
     const customIntervalInput = document.getElementById('customIntervalInput');
     const includeTimestampCheck = document.getElementById('includeTimestampCheck');
+    const stitchBtn             = document.getElementById('stitchBtn');
+    const stitchLimitValue      = document.getElementById('stitchLimitValue');
     const headerExtractBtn     = document.getElementById('headerExtractBtn');
     const headerSaveZipBtn     = document.getElementById('headerSaveZipBtn');
     const reloadBtnEl          = document.querySelector('.reload-btn');
@@ -42,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentVideoFileName = '';
     let selectedInterval = 0.2;
     let isExtracting = false;
+    const MAX_STITCH_HEIGHT = 16384;
 
     const CUSTOM_INTERVAL_KEY = 'mse_customInterval';
 
@@ -93,6 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
         timeSlider.value = 0;
         timeSlider.disabled = false;
         if (videoDropOverlay) videoDropOverlay.classList.add('hidden');
+        if (stitchLimitValue && metadata.height > 0) {
+            stitchLimitValue.textContent = Math.floor(MAX_STITCH_HEIGHT / metadata.height);
+        }
         updateExtractBtn();
         updateFrameCount();
         setStatus(`読み込み完了: ${currentVideoFileName}`);
@@ -155,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         extractBtn.textContent = 'キャンセル';
         extractBtn.classList.add('btn-cancel');
         saveZipBtn.disabled = true;
+        stitchBtn.disabled = true;
         extractionProgress.classList.remove('hidden');
         imageGallery.clear();
         updateProgress(0, count);
@@ -187,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             extractBtn.textContent = '抽出';
             extractBtn.classList.remove('btn-cancel');
             extractionProgress.classList.add('hidden');
+            updateSaveButtons();
         }
     }
 
@@ -209,6 +217,76 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus(`ZIP保存完了 (${frames.length}枚)`);
     });
 
+    // --- 縦結合ボタン ---
+    stitchBtn.addEventListener('click', async () => {
+        const frames = imageGallery.getSelectedFrames();
+        if (frames.length === 0) {
+            setStatus('結合する画像が選択されていません');
+            return;
+        }
+        stitchBtn.disabled = true;
+        try {
+            await stitchVertically(frames);
+        } finally {
+            updateSaveButtons();
+        }
+    });
+
+    async function stitchVertically(frames) {
+        const firstImg = await loadImage(frames[0].dataUrl);
+        const frameW = firstImg.naturalWidth;
+        const frameH = firstImg.naturalHeight;
+        const maxCount = frameH > 0 ? Math.floor(MAX_STITCH_HEIGHT / frameH) : frames.length;
+
+        const chunks = [];
+        for (let i = 0; i < frames.length; i += maxCount) {
+            chunks.push(frames.slice(i, i + maxCount));
+        }
+
+        if (chunks.length > 1) {
+            const ok = confirm(
+                `選択した ${frames.length} 枚は1キャプチャの上限（${maxCount} 枚）を超えるため、\n` +
+                `${chunks.length} ファイルに分割して保存します。\n\n続けますか？`
+            );
+            if (!ok) return;
+        }
+
+        const baseName = getFileNameWithoutExtension(currentVideoFileName) || 'frames';
+
+        for (let c = 0; c < chunks.length; c++) {
+            const chunk = chunks[c];
+            const canvas = document.createElement('canvas');
+            canvas.width = frameW;
+            canvas.height = frameH * chunk.length;
+            const ctx = canvas.getContext('2d');
+
+            for (let i = 0; i < chunk.length; i++) {
+                const img = (c === 0 && i === 0) ? firstImg : await loadImage(chunk[i].dataUrl);
+                ctx.drawImage(img, 0, i * frameH);
+                setStatus(`縦結合中... (${c + 1}/${chunks.length}ファイル目、${i + 1}/${chunk.length}枚)`);
+            }
+
+            await new Promise(resolve => {
+                canvas.toBlob((blob) => {
+                    saveAs(blob, `${baseName}_stitched_${c + 1}.jpg`);
+                    resolve();
+                }, 'image/jpeg', JPEG_QUALITY);
+            });
+        }
+
+        const fileLabel = chunks.length > 1 ? `${chunks.length}ファイル` : '1ファイル';
+        setStatus(`縦結合画像を保存しました（${fileLabel}、計${frames.length}枚）`);
+    }
+
+    function loadImage(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = src;
+        });
+    }
+
     // --- ギャラリー選択ボタン ---
     selectAllBtn.addEventListener('click', () => {
         imageGallery.selectAll();
@@ -223,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     imageGallery.onSelectionChange(({ selected }) => {
         if (!isExtracting) {
             saveZipBtn.disabled = selected === 0;
+            stitchBtn.disabled = selected === 0;
         }
     });
 
@@ -307,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSaveButtons() {
         const { selected } = imageGallery.getCounts();
         saveZipBtn.disabled = selected === 0;
+        stitchBtn.disabled = selected === 0;
     }
 
     function updateProgress(current, total) {

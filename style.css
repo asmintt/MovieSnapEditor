@@ -237,6 +237,9 @@ body {
   cursor: pointer;
   transition: all 0.15s;
   color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .interval-btn:hover {
@@ -484,6 +487,11 @@ body {
   display: flex;
   gap: 4px;
   margin-bottom: 0;
+  align-items: center;
+}
+
+.controls-bar .interval-btn {
+  flex: 1;
 }
 
 .controls-bar .custom-interval-row {
