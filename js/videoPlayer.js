@@ -94,11 +94,21 @@ class VideoPlayer {
         this.loadingContext = loadingId;
 
         try {
-            this.cleanup();
+            // src=''を経由せず直接セットすることで、ブラウザの二重ソース処理を回避
+            if (this.rangePlaybackInterval) {
+                clearInterval(this.rangePlaybackInterval);
+                this.rangePlaybackInterval = null;
+            }
+            this.videoElement.pause();
             this.currentObjectUrl = videoURL;
-            this.videoElement.src = videoURL;
+            this.videoMetadata = { duration: 0, currentTime: 0, width: 0, height: 0, isLoaded: false };
+            this.disableVideoControls();
 
-            await this.waitForVideoLoad();
+            // イベントリスナーをsrc設定前に登録してイベント取りこぼしを防ぐ
+            const loadPromise = this.waitForVideoLoad();
+            this.videoElement.src = videoURL;
+            this.videoElement.load();
+            await loadPromise;
 
             if (this.loadingContext === loadingId) {
                 logInfo('VideoPlayer: 動画読み込み完了', { fileName });
