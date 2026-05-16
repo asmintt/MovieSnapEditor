@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedInterval = 0.2;
     let isExtracting = false;
     const MAX_STITCH_HEIGHT = 16384;
+    let currentStitchLimit = 0;
 
     const CUSTOM_INTERVAL_KEY = 'mse_customInterval';
 
@@ -127,9 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
         timeSlider.disabled = false;
         if (videoDropOverlay) videoDropOverlay.classList.add('hidden');
         if (metadata.height > 0) {
-            const limit = Math.floor(MAX_STITCH_HEIGHT / metadata.height);
-            if (stitchLimitValue) stitchLimitValue.textContent = limit;
-            imageGallery.setStitchLimit(limit);
+            currentStitchLimit = Math.floor(MAX_STITCH_HEIGHT / metadata.height);
+            if (stitchLimitValue) stitchLimitValue.textContent = currentStitchLimit;
+            imageGallery.setStitchLimit(currentStitchLimit);
         }
         updateExtractBtn();
         updateFrameCount();
@@ -431,7 +432,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateHeaderCounts(total, selected) {
         if (statusTotalCount)    statusTotalCount.textContent    = total > 0 ? total    : '--';
-        if (statusSelectedCount) statusSelectedCount.textContent = total > 0 ? selected : '--';
+        if (statusSelectedCount) {
+            statusSelectedCount.textContent = total > 0 ? selected : '--';
+            const overLimit = currentStitchLimit > 0 && selected > currentStitchLimit;
+            statusSelectedCount.style.color = overLimit ? '#e67e22' : '';
+        }
     }
 
     function updateProgress(current, total) {
