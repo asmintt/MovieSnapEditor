@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const includeTimestampCheck = document.getElementById('includeTimestampCheck');
     const stitchBtn             = document.getElementById('stitchBtn');
     const stitchLimitValue      = document.getElementById('stitchLimitValue');
+    const headerTotalCount      = document.getElementById('headerTotalCount');
+    const headerSelectedCount   = document.getElementById('headerSelectedCount');
     const headerExtractBtn     = document.getElementById('headerExtractBtn');
     const headerSaveZipBtn     = document.getElementById('headerSaveZipBtn');
     const reloadBtnEl          = document.querySelector('.reload-btn');
@@ -40,6 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const frameExtractor = new FrameExtractor(videoPlayer.getVideoElement());
     const imageGallery   = new ImageGallery(galleryGrid, selectionCount);
+    const cropSelector   = new CropSelector(videoPlayer.getVideoElement());
+    cropSelector.init();
 
     let currentVideoFileName = '';
     let selectedInterval = 0.2;
@@ -90,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 動画読み込み完了 ---
     videoPlayer.onVideoLoaded((metadata) => {
+        cropSelector.onVideoLoaded();
         timeRangeManager.onVideoLoaded(metadata.duration);
         durationDisp.textContent = formatTimeFromSeconds(metadata.duration);
         timeSlider.max = metadata.duration;
@@ -177,7 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     onProgress: (current, total) => {
                         updateProgress(current, total);
                         setStatus(`フレームを抽出中... (${current}/${total}枚)`);
-                    }
+                    },
+                    cropRect: cropSelector.getCropRect()
                 }
             );
 
@@ -298,7 +304,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSaveButtons();
     });
 
-    imageGallery.onSelectionChange(({ selected }) => {
+    imageGallery.onSelectionChange(({ total, selected }) => {
+        updateHeaderCounts(total, selected);
         if (!isExtracting) {
             saveZipBtn.disabled = selected === 0;
             stitchBtn.disabled = selected === 0;
@@ -387,6 +394,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const { selected } = imageGallery.getCounts();
         saveZipBtn.disabled = selected === 0;
         stitchBtn.disabled = selected === 0;
+    }
+
+    function updateHeaderCounts(total, selected) {
+        if (headerTotalCount)    headerTotalCount.textContent    = total > 0 ? total    : '--';
+        if (headerSelectedCount) headerSelectedCount.textContent = total > 0 ? selected : '--';
     }
 
     function updateProgress(current, total) {
