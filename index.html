@@ -25,14 +25,26 @@
     <h1>MovieSnapEditor</h1>
     <div class="header-actions">
       <button id="headerExtractBtn" class="header-btn" title="抽出" disabled>
-        <svg class="icon-default" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
-          <line x1="20" y1="4" x2="8.12" y2="15.88"/>
-          <line x1="14.47" y1="14.48" x2="20" y2="20"/>
-          <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+        <svg class="icon-default" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="1" width="22" height="13" rx="1"/>
+          <line x1="6" y1="1" x2="6" y2="14"/>
+          <line x1="18" y1="1" x2="18" y2="14"/>
+          <line x1="1" y1="5" x2="6" y2="5"/>
+          <line x1="18" y1="5" x2="23" y2="5"/>
+          <line x1="1" y1="10" x2="6" y2="10"/>
+          <line x1="18" y1="10" x2="23" y2="10"/>
+          <line x1="12" y1="14" x2="12" y2="20"/>
+          <polyline points="9 17 12 20 15 17"/>
         </svg>
         <svg class="icon-cancel" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <button id="headerStitchBtn" class="header-btn" title="縦結合して保存" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="4" rx="1"/>
+          <rect x="3" y="10" width="18" height="4" rx="1"/>
+          <rect x="3" y="17" width="18" height="4" rx="1"/>
         </svg>
       </button>
       <button id="headerSaveZipBtn" class="header-btn" title="選択画像の一括保存（ZIP）" disabled>
@@ -123,7 +135,10 @@
       <!-- 3. クロップ範囲設定 -->
       <div class="crop-settings-bar">
         <div class="crop-settings-header">
-          <span class="crop-settings-title">3. クロップ範囲設定</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--color-text-muted)">
+            <polyline points="6 3 6 15 18 15"/>
+            <polyline points="3 6 15 6 15 18"/>
+          </svg>
           <label class="checkbox-label">
             <input type="checkbox" id="cropEnabledCheck">
             <span>クロップ適用</span>
@@ -195,10 +210,28 @@
         </div>
         <div class="controls-separator"></div>
         <div class="controls-group controls-group--actions">
-          <button id="extractBtn" class="btn btn-primary" disabled>抽出</button>
-          <span class="frame-count-display">抽出枚数：<span id="frameCountValue">--</span>枚</span>
-          <button id="stitchBtn" class="btn btn-secondary" disabled>縦結合して保存</button>
-          <span class="frame-count-display">1キャプチャ上限<span id="stitchLimitValue">--</span>枚</span>
+          <button id="extractBtn" class="btn btn-primary" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="1" width="22" height="13" rx="1"/>
+              <line x1="6" y1="1" x2="6" y2="14"/>
+              <line x1="18" y1="1" x2="18" y2="14"/>
+              <line x1="1" y1="5" x2="6" y2="5"/>
+              <line x1="18" y1="5" x2="23" y2="5"/>
+              <line x1="1" y1="10" x2="6" y2="10"/>
+              <line x1="18" y1="10" x2="23" y2="10"/>
+              <line x1="12" y1="14" x2="12" y2="20"/>
+              <polyline points="9 17 12 20 15 17"/>
+            </svg>
+            <span>抽出</span>
+          </button>
+          <button id="stitchBtn" class="btn btn-secondary" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="4" rx="1"/>
+              <rect x="3" y="10" width="18" height="4" rx="1"/>
+              <rect x="3" y="17" width="18" height="4" rx="1"/>
+            </svg>
+            <span>縦結合して保存</span>
+          </button>
           <button id="saveZipBtn" class="btn btn-secondary" disabled>一括保存（ZIP）</button>
         </div>
         <div id="extractionProgress" class="extraction-progress hidden">

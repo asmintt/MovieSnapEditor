@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusTotalCount      = document.getElementById('statusTotalCount');
     const statusSelectedCount   = document.getElementById('statusSelectedCount');
     const headerExtractBtn     = document.getElementById('headerExtractBtn');
+    const headerStitchBtn      = document.getElementById('headerStitchBtn');
     const headerSaveZipBtn     = document.getElementById('headerSaveZipBtn');
     const reloadBtnEl          = document.querySelector('.reload-btn');
     const videoDropOverlay     = document.getElementById('videoDropOverlay');
@@ -163,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('実行しますか？')) return;
 
         isExtracting = true;
-        extractBtn.textContent = 'キャンセル';
+        extractBtn.querySelector('span').textContent = 'キャンセル';
         extractBtn.classList.add('btn-cancel');
         saveZipBtn.disabled = true;
         stitchBtn.disabled = true;
@@ -197,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus('抽出中にエラーが発生しました');
         } finally {
             isExtracting = false;
-            extractBtn.textContent = '抽出';
+            extractBtn.querySelector('span').textContent = '抽出';
             extractBtn.classList.remove('btn-cancel');
             extractionProgress.classList.add('hidden');
             updateSaveButtons();
@@ -338,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ヘッダーボタン ---
     // クリックをサイドバーの元ボタンに委譲
     headerExtractBtn.addEventListener('click', () => extractBtn.click());
+    headerStitchBtn.addEventListener('click', () => stitchBtn.click());
     headerSaveZipBtn.addEventListener('click', () => saveZipBtn.click());
 
     // disabled / is-cancel 状態を元ボタンから同期
@@ -349,12 +351,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }).observe(source, { attributes: true, attributeFilter: ['disabled', 'class'] });
     }
     syncHeaderBtn(extractBtn, headerExtractBtn);
+    syncHeaderBtn(stitchBtn, headerStitchBtn);
     syncHeaderBtn(saveZipBtn, headerSaveZipBtn);
 
     // フッタートゥールチップ（マウスオーバー時に説明を表示）
     let savedStatus = '';
     const tooltips = [
         [headerExtractBtn, '抽出: 設定した間隔でフレームを抽出します', 'キャンセル: 抽出を中断します'],
+        [headerStitchBtn,  '縦結合: 選択中の画像を縦に並べて保存します', null],
         [headerSaveZipBtn, '一括保存: 選択中の画像をZIPでダウンロードします', null],
         [reloadBtnEl,      'リロード: アプリをリセットします（抽出データが消えます）', null],
     ];

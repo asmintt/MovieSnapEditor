@@ -341,6 +341,9 @@ body {
   border-radius: var(--radius);
   cursor: pointer;
   transition: background 0.15s, opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .btn:disabled {
