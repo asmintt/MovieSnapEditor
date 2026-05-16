@@ -218,6 +218,19 @@ document.addEventListener('DOMContentLoaded', () => {
             imageGallery.selectAll();
             updateSaveButtons();
             const { total } = imageGallery.getCounts();
+
+            // 実フレームの高さで上限を再計算（iOS回転補正ずれ対策）
+            const firstFrames = imageGallery.getSelectedFrames();
+            if (firstFrames.length > 0) {
+                const img = await loadImage(firstFrames[0].dataUrl);
+                const actualLimit = img.naturalHeight > 0
+                    ? Math.floor(MAX_STITCH_HEIGHT / img.naturalHeight)
+                    : currentStitchLimit;
+                currentStitchLimit = actualLimit;
+                if (stitchLimitValue) stitchLimitValue.textContent = actualLimit;
+                imageGallery.setStitchLimit(actualLimit);
+            }
+
             setStatus(`${total}枚のフレームを抽出しました`);
 
         } catch (e) {
