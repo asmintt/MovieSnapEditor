@@ -1104,18 +1104,10 @@ body {
 
 .crop-settings-header {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   margin-bottom: 10px;
-}
-
-.crop-settings-sep {
-  width: 1px;
-  height: 16px;
-  background: var(--color-border);
-  flex-shrink: 0;
-  margin-left: auto;
 }
 
 .crop-right-group {
