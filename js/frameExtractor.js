@@ -37,17 +37,27 @@ class FrameExtractor {
         });
     }
 
-    #captureFrame(timeSeconds, videoFileName) {
-        this.#canvas.width = this.#videoElement.videoWidth;
-        this.#canvas.height = this.#videoElement.videoHeight;
-        this.#ctx.drawImage(this.#videoElement, 0, 0);
-        const dataUrl = this.#canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+    #captureFrame(timeSeconds, videoFileName, cropRect) {
+        if (cropRect) {
+            this.#canvas.width  = cropRect.w;
+            this.#canvas.height = cropRect.h;
+            this.#ctx.drawImage(
+                this.#videoElement,
+                cropRect.x, cropRect.y, cropRect.w, cropRect.h,
+                0, 0, cropRect.w, cropRect.h
+            );
+        } else {
+            this.#canvas.width  = this.#videoElement.videoWidth;
+            this.#canvas.height = this.#videoElement.videoHeight;
+            this.#ctx.drawImage(this.#videoElement, 0, 0);
+        }
+        const dataUrl   = this.#canvas.toDataURL('image/jpeg', JPEG_QUALITY);
         const timestamp = formatTimeFromSeconds(timeSeconds);
-        const fileName = ZipExporter.generateFileName(videoFileName, timeSeconds);
+        const fileName  = ZipExporter.generateFileName(videoFileName, timeSeconds);
         return { dataUrl, timestamp, fileName, timeSeconds };
     }
 
-    async extractRange(startTime, endTime, interval, videoFileName, { onFrame, onProgress } = {}) {
+    async extractRange(startTime, endTime, interval, videoFileName, { onFrame, onProgress, cropRect } = {}) {
         this.#cancelled = false;
         const frames = [];
         const total = this.calculateFrameCount(startTime, endTime, interval);
@@ -59,7 +69,7 @@ class FrameExtractor {
 
             try {
                 await this.#seekTo(t);
-                const frame = this.#captureFrame(t, videoFileName);
+                const frame = this.#captureFrame(t, videoFileName, cropRect);
                 frames.push(frame);
 
                 if (onFrame) onFrame(frame);
