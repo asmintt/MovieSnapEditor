@@ -47,6 +47,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const cropSelector   = new CropSelector(videoPlayer.getVideoElement());
     cropSelector.init();
 
+    const playRangeButton = document.getElementById('playRangeButton');
+    const videoEl = videoPlayer.getVideoElement();
+
+    function syncRangePlayBtn() {
+        if (!playRangeButton) return;
+        const playing = !videoEl.paused;
+        playRangeButton.classList.toggle('is-playing', playing);
+        playRangeButton.querySelector('span').textContent = playing ? '停止' : '範囲再生';
+    }
+
+    playRangeButton.addEventListener('click', async () => {
+        if (!videoPlayer.isVideoLoaded()) return;
+        if (!videoEl.paused) {
+            videoPlayer.pauseVideo();
+        } else {
+            await timeRangeManager.playSelectedRange();
+        }
+    });
+
+    videoEl.addEventListener('play',  syncRangePlayBtn);
+    videoEl.addEventListener('pause', syncRangePlayBtn);
+    videoEl.addEventListener('ended', syncRangePlayBtn);
+
     let currentVideoFileName = '';
     let selectedInterval = 0.2;
     let isExtracting = false;

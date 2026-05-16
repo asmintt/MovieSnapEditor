@@ -39,7 +39,7 @@ body {
 .app-header {
   background: var(--color-header);
   color: #fff;
-  padding: 0 20px;
+  padding: 0 12px;
   height: 44px;
   display: flex;
   align-items: center;
@@ -50,9 +50,13 @@ body {
 }
 
 .app-header h1 {
-  font-size: 18px;
+  font-size: 13px;
   font-weight: bold;
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 
@@ -80,7 +84,7 @@ body {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .header-btn {
@@ -573,6 +577,11 @@ body {
   padding: 6px 8px;
   flex-shrink: 0;
 }
+
+.btn-icon-stop { display: none; }
+#playRangeButton.is-playing .btn-icon-play { display: none; }
+#playRangeButton.is-playing .btn-icon-stop { display: inline-flex; }
+#playRangeButton { width: 88px; flex-shrink: 0; }
 
 .ctrl-btn {
   padding: 6px 12px;

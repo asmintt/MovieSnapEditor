@@ -109,15 +109,12 @@
       <div class="range-controls">
         <div class="playback-row">
           <button id="playRangeButton" class="ctrl-btn" disabled>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            <svg class="btn-icon-play" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            <svg class="btn-icon-stop" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
             <span>範囲再生</span>
           </button>
-          <button id="pauseButton" class="ctrl-btn ctrl-btn--icon" disabled title="停止">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-          </button>
           <div class="time-input-group">
-            <span class="time-label">開始</span>
-            <input type="text" id="startTimeInput" class="time-input" value="00:00.00" disabled>
+            <input type="text" id="startTimeInput" class="time-input" placeholder="開始" disabled>
             <button id="setStartTimeButton" class="time-set-btn" disabled title="現在の再生位置を開始点に設定">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                 <line x1="7" y1="4" x2="7" y2="20"/>
@@ -127,8 +124,7 @@
             </button>
           </div>
           <div class="time-input-group">
-            <span class="time-label">終了</span>
-            <input type="text" id="endTimeInput" class="time-input" value="00:00.00" disabled>
+            <input type="text" id="endTimeInput" class="time-input" placeholder="終了" disabled>
             <button id="setEndTimeButton" class="time-set-btn" disabled title="現在の再生位置を終了点に設定">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                 <line x1="17" y1="4" x2="17" y2="20"/>

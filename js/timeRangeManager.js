@@ -77,12 +77,6 @@ class TimeRangeManager {
             });
         }
 
-        if (this.playRangeButton) {
-            this.playRangeButton.addEventListener('click', () => {
-                this.playSelectedRange();
-            });
-        }
-
         if (this.includeAudioCheckbox) {
             this.includeAudioCheckbox.addEventListener('change', () => {
                 this.handleAudioSettingChange();
@@ -167,11 +161,12 @@ class TimeRangeManager {
     }
 
     updateTimeInputs() {
+        const hasVideo = this.rangeSettings.videoDuration > 0;
         if (this.startTimeInput) {
-            this.startTimeInput.value = formatTimeFromSeconds(this.rangeSettings.startTime);
+            this.startTimeInput.value = hasVideo ? formatTimeFromSeconds(this.rangeSettings.startTime) : '';
         }
         if (this.endTimeInput) {
-            this.endTimeInput.value = formatTimeFromSeconds(this.rangeSettings.endTime);
+            this.endTimeInput.value = hasVideo ? formatTimeFromSeconds(this.rangeSettings.endTime) : '';
         }
     }
 
