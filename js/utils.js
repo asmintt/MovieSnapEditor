@@ -79,9 +79,9 @@ function parseTimeStringToSeconds(timeString) {
 
     try {
         if (timeParts.length === 2) {
-            // "MM:SS" 形式の場合
+            // "MM:SS" または "MM:SS.cc" 形式の場合
             const minutes = parseInt(timeParts[0], 10);
-            const seconds = parseInt(timeParts[1], 10);
+            const seconds = parseFloat(timeParts[1]);
 
             // 数値の妥当性チェック
             if (isNaN(minutes) || isNaN(seconds) || seconds >= 60) {

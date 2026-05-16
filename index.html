@@ -24,6 +24,12 @@
   <header class="app-header">
     <h1>MovieSnapEditor</h1>
     <div class="header-actions">
+      <button id="headerFileBtn" class="header-btn" title="動画ファイルを選択">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2h4l2 3h10a2 2 0 012 2z"/>
+          <polygon points="10,11 10,17 16,14" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
       <button id="headerExtractBtn" class="header-btn" title="抽出" disabled>
         <svg class="icon-default" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="1" y="1" width="22" height="13" rx="1"/>
@@ -99,35 +105,46 @@
       <!-- 2. 動画範囲設定 / 3. クロップ範囲設定（デスクトップ: 横並び） -->
       <div class="bottom-controls-row">
 
-      <!-- 2. 動画範囲設定 -->
+      <!-- 動画範囲設定 -->
       <div class="range-controls">
-        <div class="range-controls-header">
-          <span class="range-controls-title">2. 動画範囲設定</span>
-        </div>
-
         <div class="playback-row">
-          <button id="playButton" class="ctrl-btn" disabled>再生</button>
-          <button id="pauseButton" class="ctrl-btn" disabled>停止</button>
-          <button id="playRangeButton" class="ctrl-btn" disabled>選択範囲を再生</button>
+          <button id="playRangeButton" class="ctrl-btn" disabled>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            <span>範囲再生</span>
+          </button>
+          <button id="pauseButton" class="ctrl-btn ctrl-btn--icon" disabled title="停止">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          </button>
           <div class="time-input-group">
             <span class="time-label">開始</span>
             <input type="text" id="startTimeInput" class="time-input" value="00:00.00" disabled>
-            <button id="setStartTimeButton" class="time-set-btn" disabled>現在</button>
+            <button id="setStartTimeButton" class="time-set-btn" disabled title="現在の再生位置を開始点に設定">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="7" y1="4" x2="7" y2="20"/>
+                <line x1="7" y1="4" x2="15" y2="4"/>
+                <line x1="7" y1="20" x2="15" y2="20"/>
+              </svg>
+            </button>
           </div>
           <div class="time-input-group">
             <span class="time-label">終了</span>
             <input type="text" id="endTimeInput" class="time-input" value="00:00.00" disabled>
-            <button id="setEndTimeButton" class="time-set-btn" disabled>現在</button>
+            <button id="setEndTimeButton" class="time-set-btn" disabled title="現在の再生位置を終了点に設定">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="17" y1="4" x2="17" y2="20"/>
+                <line x1="9"  y1="4" x2="17" y2="4"/>
+                <line x1="9"  y1="20" x2="17" y2="20"/>
+              </svg>
+            </button>
           </div>
-          <div class="range-duration-group">
-            <span class="range-duration-label">範囲</span>
-            <span id="rangeDisplay" class="range-duration">--</span>
-          </div>
+          <span id="rangeDisplay" class="range-duration">--</span>
         </div>
 
         <div class="slider-row">
           <span id="currentTimeDisplay" class="time-display">00:00.00</span>
-          <input type="range" id="timeSlider" class="time-slider" min="0" max="100" value="0" step="0.01" disabled>
+          <div class="slider-wrapper">
+            <input type="range" id="timeSlider" class="time-slider" min="0" max="100" value="0" step="0.01" disabled>
+          </div>
           <span id="durationDisplay" class="time-display">00:00.00</span>
         </div>
       </div>
@@ -135,6 +152,11 @@
       <!-- 3. クロップ範囲設定 -->
       <div class="crop-settings-bar">
         <div class="crop-settings-header">
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeTimestampCheck" checked>
+            <span>再生時刻を画像に表示する</span>
+          </label>
+          <span class="crop-settings-sep"></span>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--color-text-muted)">
             <polyline points="6 3 6 15 18 15"/>
             <polyline points="3 6 15 6 15 18"/>
@@ -180,16 +202,7 @@
       <!-- コントロールバー -->
       <div class="controls-bar">
         <input type="file" id="videoFileInput" accept="video/*">
-        <div class="controls-group controls-group--file">
-          <button id="selectVideoButton" class="btn-select-file">動画ファイルを選択</button>
-          <span id="selectedFileName" class="selected-file-name"></span>
-        </div>
-        <div class="controls-separator"></div>
         <div class="controls-group controls-group--options">
-          <label class="checkbox-label">
-            <input type="checkbox" id="includeTimestampCheck" checked>
-            <span>タイムスタンプ</span>
-          </label>
           <span class="controls-label">抽出間隔（秒）：</span>
           <div class="interval-buttons">
             <button class="interval-btn active" data-interval="0.2">0.2</button>
@@ -224,15 +237,24 @@
             </svg>
             <span>抽出</span>
           </button>
-          <button id="stitchBtn" class="btn btn-secondary" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="4" rx="1"/>
-              <rect x="3" y="10" width="18" height="4" rx="1"/>
-              <rect x="3" y="17" width="18" height="4" rx="1"/>
-            </svg>
-            <span>縦結合して保存</span>
-          </button>
-          <button id="saveZipBtn" class="btn btn-secondary" disabled>一括保存（ZIP）</button>
+          <div class="btn-row">
+            <button id="stitchBtn" class="btn btn-secondary" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="4" rx="1"/>
+                <rect x="3" y="10" width="18" height="4" rx="1"/>
+                <rect x="3" y="17" width="18" height="4" rx="1"/>
+              </svg>
+              <span>縦結合して保存</span>
+            </button>
+            <button id="saveZipBtn" class="btn btn-secondary" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>一括保存（ZIP）</span>
+            </button>
+          </div>
         </div>
         <div id="extractionProgress" class="extraction-progress hidden">
           <div class="progress-bar">

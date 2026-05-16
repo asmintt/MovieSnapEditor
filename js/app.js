@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const stitchLimitValue      = document.getElementById('stitchLimitValue');
     const statusTotalCount      = document.getElementById('statusTotalCount');
     const statusSelectedCount   = document.getElementById('statusSelectedCount');
+    const headerFileBtn        = document.getElementById('headerFileBtn');
     const headerExtractBtn     = document.getElementById('headerExtractBtn');
     const headerStitchBtn      = document.getElementById('headerStitchBtn');
     const headerSaveZipBtn     = document.getElementById('headerSaveZipBtn');
@@ -337,6 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- ヘッダーボタン ---
+    headerFileBtn.addEventListener('click', () => fileHandler.openFileDialog());
     // クリックをサイドバーの元ボタンに委譲
     headerExtractBtn.addEventListener('click', () => extractBtn.click());
     headerStitchBtn.addEventListener('click', () => stitchBtn.click());
@@ -357,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // フッタートゥールチップ（マウスオーバー時に説明を表示）
     let savedStatus = '';
     const tooltips = [
+        [headerFileBtn,    '動画ファイルを選択します', null],
         [headerExtractBtn, '抽出: 設定した間隔でフレームを抽出します', 'キャンセル: 抽出を中断します'],
         [headerStitchBtn,  '縦結合: 選択中の画像を縦に並べて保存します', null],
         [headerSaveZipBtn, '一括保存: 選択中の画像をZIPでダウンロードします', null],

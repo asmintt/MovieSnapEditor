@@ -41,6 +41,7 @@ class TimeRangeManager {
         this.setEndTimeButton = getElementSafely('setEndTimeButton');
         this.rangeDisplay = getElementSafely('rangeDisplay');
         this.playRangeButton = getElementSafely('playRangeButton');
+        this.timeSlider = document.getElementById('timeSlider');
         // Web版HTMLには includeAudioCheckbox が存在しない場合がある
         this.includeAudioCheckbox = document.getElementById('includeAudioCheckbox') || null;
     }
@@ -106,6 +107,7 @@ class TimeRangeManager {
 
         this.updateTimeInputs();
         this.updateRangeDisplay();
+        this.updateSliderMarkers();
         this.setControlsEnabled(true);
     }
 
@@ -178,7 +180,7 @@ class TimeRangeManager {
         const duration = this.rangeSettings.endTime - this.rangeSettings.startTime;
         if (duration > 0) {
             this.rangeDisplay.textContent = formatTimeFromSeconds(duration);
-            this.rangeDisplay.style.color = '#27ae60';
+            this.rangeDisplay.style.color = '#2980b9';
         } else {
             this.rangeDisplay.textContent = '--';
             this.rangeDisplay.style.color = '#e74c3c';
@@ -269,7 +271,20 @@ class TimeRangeManager {
         this.notifyRangeChanged();
     }
 
+    updateSliderMarkers() {
+        if (!this.timeSlider) return;
+        const duration = this.rangeSettings.videoDuration;
+        if (duration <= 0) return;
+        const inPct  = (this.rangeSettings.startTime / duration) * 100;
+        const outPct = (this.rangeSettings.endTime   / duration) * 100;
+        const gray = '#e0e0e0';
+        const blue = '#2980b9';
+        this.timeSlider.style.background =
+            `linear-gradient(to right, ${gray} 0%, ${gray} ${inPct}%, ${blue} ${inPct}%, ${blue} ${outPct}%, ${gray} ${outPct}%, ${gray} 100%)`;
+    }
+
     notifyRangeChanged() {
+        this.updateSliderMarkers();
         if (this.onRangeChangedCallback) {
             this.onRangeChangedCallback(this.getRangeSettings());
         }
