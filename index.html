@@ -54,6 +54,25 @@
       <!-- 動画プレビュー（ドロップゾーン兼用） -->
       <div class="video-container" id="videoContainer">
         <video id="videoPlayer" preload="metadata"></video>
+
+        <!-- クロップオーバーレイ -->
+        <div id="cropOverlay" class="crop-overlay hidden">
+          <div id="cropMaskTop"    class="crop-mask"></div>
+          <div id="cropMaskBottom" class="crop-mask"></div>
+          <div id="cropMaskLeft"   class="crop-mask"></div>
+          <div id="cropMaskRight"  class="crop-mask"></div>
+          <div id="cropBox" class="crop-box">
+            <div class="crop-handle" data-dir="nw"></div>
+            <div class="crop-handle" data-dir="n"></div>
+            <div class="crop-handle" data-dir="ne"></div>
+            <div class="crop-handle" data-dir="e"></div>
+            <div class="crop-handle" data-dir="se"></div>
+            <div class="crop-handle" data-dir="s"></div>
+            <div class="crop-handle" data-dir="sw"></div>
+            <div class="crop-handle" data-dir="w"></div>
+          </div>
+        </div>
+
         <div id="videoDropOverlay" class="video-drop-overlay">
           <div class="drop-overlay-inner">
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
@@ -64,6 +83,84 @@
           </div>
         </div>
       </div>
+
+      <!-- 2. 動画範囲設定 / 3. クロップ範囲設定（デスクトップ: 横並び） -->
+      <div class="bottom-controls-row">
+
+      <!-- 2. 動画範囲設定 -->
+      <div class="range-controls">
+        <div class="range-controls-header">
+          <span class="range-controls-title">2. 動画範囲設定</span>
+        </div>
+
+        <div class="playback-row">
+          <button id="playButton" class="ctrl-btn" disabled>再生</button>
+          <button id="pauseButton" class="ctrl-btn" disabled>停止</button>
+          <button id="playRangeButton" class="ctrl-btn" disabled>選択範囲を再生</button>
+          <div class="time-input-group">
+            <span class="time-label">開始</span>
+            <input type="text" id="startTimeInput" class="time-input" value="00:00.00" disabled>
+            <button id="setStartTimeButton" class="time-set-btn" disabled>現在</button>
+          </div>
+          <div class="time-input-group">
+            <span class="time-label">終了</span>
+            <input type="text" id="endTimeInput" class="time-input" value="00:00.00" disabled>
+            <button id="setEndTimeButton" class="time-set-btn" disabled>現在</button>
+          </div>
+          <div class="range-duration-group">
+            <span class="range-duration-label">範囲</span>
+            <span id="rangeDisplay" class="range-duration">--</span>
+          </div>
+        </div>
+
+        <div class="slider-row">
+          <span id="currentTimeDisplay" class="time-display">00:00.00</span>
+          <input type="range" id="timeSlider" class="time-slider" min="0" max="100" value="0" step="0.01" disabled>
+          <span id="durationDisplay" class="time-display">00:00.00</span>
+        </div>
+      </div>
+
+      <!-- 3. クロップ範囲設定 -->
+      <div class="crop-settings-bar">
+        <div class="crop-settings-header">
+          <span class="crop-settings-title">3. クロップ範囲設定</span>
+          <label class="checkbox-label">
+            <input type="checkbox" id="cropEnabledCheck">
+            <span>クロップ適用</span>
+          </label>
+          <button id="cropDetailToggle" class="ctrl-btn crop-detail-toggle">詳細設定 ▼</button>
+        </div>
+        <div id="cropDetailPanel" class="crop-detail-panel">
+          <div class="crop-controls-row">
+            <span class="controls-label">倍率でリサイズ：</span>
+            <select id="cropScaleSelect" class="crop-scale-select">
+              <option value="">-- 倍率でリサイズ --</option>
+              <option value="0.25">25%</option>
+              <option value="0.5">50%</option>
+              <option value="0.75">75%</option>
+              <option value="1.0">100%</option>
+            </select>
+            <button id="cropSwapBtn" class="ctrl-btn">⇄ 縦横入替</button>
+          </div>
+          <div class="crop-controls-row">
+            <span class="controls-label">X</span>
+            <input type="number" id="cropX" class="crop-num-input" min="0" value="0">
+            <span class="controls-label">Y</span>
+            <input type="number" id="cropY" class="crop-num-input" min="0" value="0">
+            <span class="controls-label">W</span>
+            <input type="number" id="cropW" class="crop-num-input" min="1" value="0">
+            <span class="controls-label">H</span>
+            <input type="number" id="cropH" class="crop-num-input" min="1" value="0">
+          </div>
+          <div class="crop-controls-row">
+            <button id="cropSaveDefaultBtn" class="ctrl-btn">初期値として保存</button>
+            <button id="cropRestoreDefaultBtn" class="ctrl-btn">初期値に戻す</button>
+            <button id="cropResetBtn" class="ctrl-btn">全体リセット</button>
+          </div>
+        </div>
+      </div>
+
+      </div><!-- /.bottom-controls-row -->
 
       <!-- コントロールバー -->
       <div class="controls-bar">
@@ -111,39 +208,6 @@
           <span id="progressText" class="progress-text"></span>
         </div>
       </div>
-
-      <!-- 2. 動画範囲設定 -->
-      <div class="range-controls">
-        <div class="range-controls-header">
-          <span class="range-controls-title">2. 動画範囲設定</span>
-        </div>
-
-        <div class="playback-row">
-          <button id="playButton" class="ctrl-btn" disabled>再生</button>
-          <button id="pauseButton" class="ctrl-btn" disabled>停止</button>
-          <button id="playRangeButton" class="ctrl-btn" disabled>選択範囲を再生</button>
-          <div class="time-input-group">
-            <span class="time-label">開始</span>
-            <input type="text" id="startTimeInput" class="time-input" value="00:00.00" disabled>
-            <button id="setStartTimeButton" class="time-set-btn" disabled>現在</button>
-          </div>
-          <div class="time-input-group">
-            <span class="time-label">終了</span>
-            <input type="text" id="endTimeInput" class="time-input" value="00:00.00" disabled>
-            <button id="setEndTimeButton" class="time-set-btn" disabled>現在</button>
-          </div>
-          <div class="range-duration-group">
-            <span class="range-duration-label">範囲</span>
-            <span id="rangeDisplay" class="range-duration">--</span>
-          </div>
-        </div>
-
-        <div class="slider-row">
-          <span id="currentTimeDisplay" class="time-display">00:00.00</span>
-          <input type="range" id="timeSlider" class="time-slider" min="0" max="100" value="0" step="0.01" disabled>
-          <span id="durationDisplay" class="time-display">00:00.00</span>
-        </div>
-      </div>
     </section>
 
     <!-- 右パネル: 画像ギャラリー -->
@@ -187,6 +251,7 @@
   <script src="js/zipExporter.js"></script>
   <script src="js/frameExtractor.js"></script>
   <script src="js/imageGallery.js"></script>
+  <script src="js/cropSelector.js"></script>
   <script src="js/app.js"></script>
 
 </body>
