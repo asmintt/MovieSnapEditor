@@ -23,15 +23,6 @@
 
   <header class="app-header">
     <h1>MovieSnapEditor</h1>
-    <div class="header-counts">
-      <span class="header-count-label">抽出</span>
-      <span class="header-count-num" id="headerTotalCount">--</span>
-      <span class="header-count-label">枚</span>
-      <span class="header-count-sep"></span>
-      <span class="header-count-label">選択</span>
-      <span class="header-count-num" id="headerSelectedCount">--</span>
-      <span class="header-count-label">枚</span>
-    </div>
     <div class="header-actions">
       <button id="headerExtractBtn" class="header-btn" title="抽出" disabled>
         <svg class="icon-default" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -248,6 +239,13 @@
 
   <footer class="status-bar">
     <span id="statusText">動画ファイルを選択してください</span>
+    <div class="status-counts">
+      <span class="status-count-label">抽出：</span>
+      <span class="status-count-num" id="statusTotalCount">--</span>
+      <span class="status-count-sep"></span>
+      <span class="status-count-label">選択：</span>
+      <span class="status-count-num" id="statusSelectedCount">--</span>
+    </div>
   </footer>
 
   <!-- JS: 流用ファイル -->

@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const includeTimestampCheck = document.getElementById('includeTimestampCheck');
     const stitchBtn             = document.getElementById('stitchBtn');
     const stitchLimitValue      = document.getElementById('stitchLimitValue');
-    const headerTotalCount      = document.getElementById('headerTotalCount');
-    const headerSelectedCount   = document.getElementById('headerSelectedCount');
+    const statusTotalCount      = document.getElementById('statusTotalCount');
+    const statusSelectedCount   = document.getElementById('statusSelectedCount');
     const headerExtractBtn     = document.getElementById('headerExtractBtn');
     const headerSaveZipBtn     = document.getElementById('headerSaveZipBtn');
     const reloadBtnEl          = document.querySelector('.reload-btn');
@@ -397,8 +397,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateHeaderCounts(total, selected) {
-        if (headerTotalCount)    headerTotalCount.textContent    = total > 0 ? total    : '--';
-        if (headerSelectedCount) headerSelectedCount.textContent = total > 0 ? selected : '--';
+        if (statusTotalCount)    statusTotalCount.textContent    = total > 0 ? total    : '--';
+        if (statusSelectedCount) statusSelectedCount.textContent = total > 0 ? selected : '--';
     }
 
     function updateProgress(current, total) {
