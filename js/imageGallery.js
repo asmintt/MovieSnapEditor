@@ -7,6 +7,7 @@ class ImageGallery {
     #countEl;
     #frames = [];
     #onSelectionChangeCallback = null;
+    #stitchLimit = 0;
 
     constructor(gridEl, countEl) {
         this.#gridEl = gridEl;
@@ -104,11 +105,32 @@ class ImageGallery {
         this.#onSelectionChangeCallback = callback;
     }
 
+    setStitchLimit(n) {
+        this.#stitchLimit = n;
+        this.#updateOverLimit();
+    }
+
+    #updateOverLimit() {
+        if (!this.#stitchLimit) return;
+        let selectedCount = 0;
+        this.#frames.forEach((f, i) => {
+            const card = this.#gridEl.querySelector(`[data-index="${i}"]`);
+            if (!card) return;
+            if (f.selected) {
+                selectedCount++;
+                card.classList.toggle('over-limit', selectedCount > this.#stitchLimit);
+            } else {
+                card.classList.remove('over-limit');
+            }
+        });
+    }
+
     #updateCount() {
         const { total, selected } = this.getCounts();
         if (this.#countEl) {
             this.#countEl.textContent = `${selected}/${total}枚選択中`;
         }
+        this.#updateOverLimit();
         if (this.#onSelectionChangeCallback) {
             this.#onSelectionChangeCallback({ total, selected });
         }

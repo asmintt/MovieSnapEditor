@@ -126,8 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
         timeSlider.value = 0;
         timeSlider.disabled = false;
         if (videoDropOverlay) videoDropOverlay.classList.add('hidden');
-        if (stitchLimitValue && metadata.height > 0) {
-            stitchLimitValue.textContent = Math.floor(MAX_STITCH_HEIGHT / metadata.height);
+        if (metadata.height > 0) {
+            const limit = Math.floor(MAX_STITCH_HEIGHT / metadata.height);
+            if (stitchLimitValue) stitchLimitValue.textContent = limit;
+            imageGallery.setStitchLimit(limit);
         }
         updateExtractBtn();
         updateFrameCount();
@@ -274,15 +276,8 @@ document.addEventListener('DOMContentLoaded', () => {
             chunks.push(frames.slice(i, i + maxCount));
         }
 
-        if (chunks.length > 1) {
-            const ok = confirm(
-                `選択した ${frames.length} 枚は1キャプチャの上限（${maxCount} 枚）を超えるため、\n` +
-                `${chunks.length} ファイルに分割して保存します。\n\n続けますか？`
-            );
-            if (!ok) return;
-        }
-
         const baseName = getFileNameWithoutExtension(currentVideoFileName) || 'frames';
+        const blobs = [];
 
         for (let c = 0; c < chunks.length; c++) {
             const chunk = chunks[c];
@@ -297,16 +292,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 setStatus(`縦結合中... (${c + 1}/${chunks.length}ファイル目、${i + 1}/${chunk.length}枚)`);
             }
 
-            await new Promise(resolve => {
-                canvas.toBlob((blob) => {
-                    saveAs(blob, `${baseName}_stitched_${c + 1}.jpg`);
-                    resolve();
-                }, 'image/jpeg', JPEG_QUALITY);
+            const blob = await new Promise(resolve => {
+                canvas.toBlob(resolve, 'image/jpeg', JPEG_QUALITY);
             });
+            blobs.push(blob);
         }
 
-        const fileLabel = chunks.length > 1 ? `${chunks.length}ファイル` : '1ファイル';
-        setStatus(`縦結合画像を保存しました（${fileLabel}、計${frames.length}枚）`);
+        if (blobs.length === 1) {
+            saveAs(blobs[0], `${baseName}_stitched.jpg`);
+            setStatus(`縦結合画像を保存しました（計${frames.length}枚）`);
+        } else {
+            const zip = new JSZip();
+            blobs.forEach((blob, i) => {
+                zip.file(`${baseName}_stitched_${i + 1}.jpg`, blob);
+            });
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            saveAs(zipBlob, `${baseName}_stitched.zip`);
+            setStatus(`縦結合画像をZIPで保存しました（${blobs.length}ファイル、計${frames.length}枚）`);
+        }
     }
 
     function loadImage(src) {

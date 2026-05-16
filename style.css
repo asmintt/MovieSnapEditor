@@ -538,7 +538,7 @@ body {
 
 #frameCountValue {
   font-weight: 700;
-  color: var(--color-success);
+  color: #fff;
   display: inline-block;
   width: 3ch;
   text-align: right;
@@ -774,6 +774,33 @@ body {
   color: var(--color-text);
 }
 
+.gallery-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gallery-stitch-limit {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  background: var(--color-border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.gallery-stitch-limit::before {
+  content: '縦結合時の同一画像化上限：';
+}
+
+.gallery-stitch-limit::after {
+  content: '枚';
+}
+
+.gallery-card.selected.over-limit .card-check {
+  background: #e67e22;
+}
+
 .selection-count {
   font-size: 11px;
   color: var(--color-text-muted);
@@ -991,14 +1018,14 @@ body {
 
 .status-count-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: #fff;
   white-space: nowrap;
 }
 
 .status-count-num {
   font-size: 14px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.85);
+  color: #fff;
   min-width: 2ch;
   text-align: right;
 }
