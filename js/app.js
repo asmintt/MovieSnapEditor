@@ -404,14 +404,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ヘルパー ---
     function updateFrameCount() {
-        if (!frameCountValue) return;
-        if (!videoPlayer.isVideoLoaded()) {
-            frameCountValue.textContent = '--';
-            return;
-        }
+        if (!videoPlayer.isVideoLoaded()) return;
         const { startTime, endTime } = timeRangeManager.getRangeSettings();
         const count = frameExtractor.calculateFrameCount(startTime, endTime, selectedInterval);
-        frameCountValue.textContent = count > 0 ? count : '--';
+        if (count > 0) {
+            setStatus(`抽出間隔 ${selectedInterval}秒 → 換算 ${count}枚`);
+        }
     }
 
     function updateExtractBtn() {
