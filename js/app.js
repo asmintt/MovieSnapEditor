@@ -415,14 +415,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // クリックをサイドバーの元ボタンに委譲
     headerExtractBtn.addEventListener('click', () => extractBtn.click());
     headerStitchBtn.addEventListener('click', () => stitchBtn.click());
-    headerSaveZipBtn.addEventListener('click', () => {
-        if (!fileHandler.currentFile.fileURL) return;
-        const a = document.createElement('a');
-        a.href = fileHandler.currentFile.fileURL;
-        a.download = fileHandler.currentFile.fileName || 'video';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+    headerSaveZipBtn.addEventListener('click', async () => {
+        const { file, fileName } = fileHandler.currentFile;
+        if (!file) return;
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({ files: [file], title: fileName });
+            } catch (e) {
+                if (e.name !== 'AbortError') setStatus('共有に失敗しました');
+            }
+        } else {
+            // フォールバック: ダウンロード
+            const a = document.createElement('a');
+            a.href = fileHandler.currentFile.fileURL;
+            a.download = fileName || 'video';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
         setStatus('元動画を再保存する（範囲・クロップは未適用）');
     });
 
