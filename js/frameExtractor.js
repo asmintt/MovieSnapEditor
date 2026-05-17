@@ -82,6 +82,10 @@ class FrameExtractor {
         return frames;
     }
 
+    captureCurrentFrame(videoFileName, cropRect) {
+        return this.#captureFrame(this.#videoElement.currentTime, videoFileName, cropRect);
+    }
+
     cancel() {
         this.#cancelled = true;
     }

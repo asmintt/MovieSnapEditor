@@ -368,6 +368,17 @@ body {
 .btn-primary.btn-cancel {
   background: var(--color-danger);
 }
+.btn-capture {
+  background: #2980b9;
+  color: #fff;
+}
+.btn-capture:not(:disabled):hover {
+  background: #2471a3;
+}
+.btn-capture:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 .btn-secondary {
   background: var(--color-bg);
@@ -1006,6 +1017,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 600;
 }
 
 .status-counts {

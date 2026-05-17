@@ -30,7 +30,7 @@
           <polygon points="10,11 10,17 16,14" fill="currentColor" stroke="none"/>
         </svg>
       </button>
-      <button id="headerExtractBtn" class="header-btn" title="抽出" disabled>
+      <button id="headerExtractBtn" class="header-btn" title="範囲抽出" disabled>
         <svg class="icon-default" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="1" y="1" width="22" height="13" rx="1"/>
           <line x1="6" y1="1" x2="6" y2="14"/>
@@ -220,20 +220,34 @@
         </div>
         <div class="controls-separator"></div>
         <div class="controls-group controls-group--actions">
-          <button id="extractBtn" class="btn btn-primary" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="1" width="22" height="13" rx="1"/>
-              <line x1="6" y1="1" x2="6" y2="14"/>
-              <line x1="18" y1="1" x2="18" y2="14"/>
-              <line x1="1" y1="5" x2="6" y2="5"/>
-              <line x1="18" y1="5" x2="23" y2="5"/>
-              <line x1="1" y1="10" x2="6" y2="10"/>
-              <line x1="18" y1="10" x2="23" y2="10"/>
-              <line x1="12" y1="14" x2="12" y2="20"/>
-              <polyline points="9 17 12 20 15 17"/>
-            </svg>
-            <span>抽出</span>
-          </button>
+          <div class="btn-row">
+            <button id="extractBtn" class="btn btn-primary" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="1" width="22" height="13" rx="1"/>
+                <line x1="6" y1="1" x2="6" y2="14"/>
+                <line x1="18" y1="1" x2="18" y2="14"/>
+                <line x1="1" y1="5" x2="6" y2="5"/>
+                <line x1="18" y1="5" x2="23" y2="5"/>
+                <line x1="1" y1="10" x2="6" y2="10"/>
+                <line x1="18" y1="10" x2="23" y2="10"/>
+                <line x1="12" y1="14" x2="12" y2="20"/>
+                <polyline points="9 17 12 20 15 17"/>
+              </svg>
+              <span>範囲抽出</span>
+            </button>
+            <button id="captureBtn" class="btn btn-capture" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="1"/>
+                <line x1="7" y1="4" x2="7" y2="20"/>
+                <line x1="17" y1="4" x2="17" y2="20"/>
+                <line x1="2" y1="9" x2="7" y2="9"/>
+                <line x1="17" y1="9" x2="22" y2="9"/>
+                <line x1="2" y1="15" x2="7" y2="15"/>
+                <line x1="17" y1="15" x2="22" y2="15"/>
+              </svg>
+              <span>1枚抽出</span>
+            </button>
+          </div>
           <div class="btn-row">
             <button id="stitchBtn" class="btn btn-secondary" disabled>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

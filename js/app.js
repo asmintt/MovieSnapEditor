@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentTimeDisp     = document.getElementById('currentTimeDisplay');
     const durationDisp        = document.getElementById('durationDisplay');
     const extractBtn          = document.getElementById('extractBtn');
+    const captureBtn          = document.getElementById('captureBtn');
     const saveZipBtn          = document.getElementById('saveZipBtn');
     const selectAllBtn        = document.getElementById('selectAllBtn');
     const deselectAllBtn      = document.getElementById('deselectAllBtn');
@@ -49,6 +50,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const playRangeButton = document.getElementById('playRangeButton');
     const videoEl = videoPlayer.getVideoElement();
+
+    // --- 動画エリア長押しで新しいタブに開く（iOS: 共有シートから保存） ---
+    let longPressTimer = null;
+    videoEl.addEventListener('touchstart', () => {
+        if (!fileHandler.currentFile.fileURL) return;
+        longPressTimer = setTimeout(() => {
+            window.open(fileHandler.currentFile.fileURL, '_blank');
+        }, 600);
+    }, { passive: true });
+    videoEl.addEventListener('touchend',  () => clearTimeout(longPressTimer));
+    videoEl.addEventListener('touchmove', () => clearTimeout(longPressTimer));
 
     function syncRangePlayBtn() {
         if (!playRangeButton) return;
@@ -158,13 +170,25 @@ document.addEventListener('DOMContentLoaded', () => {
         updateFrameCount();
     });
 
-    // --- 抽出ボタン ---
+    // --- 範囲抽出ボタン ---
     extractBtn.addEventListener('click', async () => {
         if (isExtracting) {
             frameExtractor.cancel();
             return;
         }
         await startExtraction();
+    });
+
+    // --- 1枚抽出ボタン ---
+    captureBtn.addEventListener('click', () => {
+        if (!videoPlayer.isVideoLoaded() || isExtracting) return;
+        const cropRect = cropSelector.getCropRect();
+        const frame = frameExtractor.captureCurrentFrame(currentVideoFileName, cropRect);
+        imageGallery.addFrame(frame);
+        updateSaveButtons();
+        const { total, selected } = imageGallery.getCounts();
+        updateHeaderCounts(total, selected);
+        setStatus(`1枚追加しました（${frame.timestamp}）`);
     });
 
     async function startExtraction() {
@@ -191,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('実行しますか？')) return;
 
         isExtracting = true;
+        captureBtn.disabled = true;
         extractBtn.querySelector('span').textContent = 'キャンセル';
         extractBtn.classList.add('btn-cancel');
         saveZipBtn.disabled = true;
@@ -238,7 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus('抽出中にエラーが発生しました');
         } finally {
             isExtracting = false;
-            extractBtn.querySelector('span').textContent = '抽出';
+            captureBtn.disabled = false;
+            extractBtn.querySelector('span').textContent = '範囲抽出';
             extractBtn.classList.remove('btn-cancel');
             extractionProgress.classList.add('hidden');
             updateSaveButtons();
@@ -400,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let savedStatus = '';
     const tooltips = [
         [headerFileBtn,    '動画ファイルを選択します', null],
-        [headerExtractBtn, '抽出: 設定した間隔でフレームを抽出します', 'キャンセル: 抽出を中断します'],
+        [headerExtractBtn, '範囲抽出: 設定した間隔でフレームを抽出します', 'キャンセル: 抽出を中断します'],
         [headerStitchBtn,  '縦結合: 選択中の画像を縦に並べて保存します', null],
         [headerSaveZipBtn, '一括保存: 選択中の画像をZIPでダウンロードします', null],
         [reloadBtnEl,      'リロード: アプリをリセットします（抽出データが消えます）', null],
@@ -426,7 +452,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateExtractBtn() {
-        if (!videoPlayer.isVideoLoaded()) {
+        const loaded = videoPlayer.isVideoLoaded();
+        captureBtn.disabled = !loaded || isExtracting;
+        if (!loaded) {
             extractBtn.disabled = true;
             return;
         }
