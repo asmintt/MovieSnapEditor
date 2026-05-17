@@ -43,10 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
     videoPlayer.init();
     timeRangeManager.init();
 
-    const frameExtractor = new FrameExtractor(videoPlayer.getVideoElement());
-    const imageGallery   = new ImageGallery(galleryGrid, selectionCount);
-    const cropSelector   = new CropSelector(videoPlayer.getVideoElement());
+    const frameExtractor    = new FrameExtractor(videoPlayer.getVideoElement());
+    const imageGallery      = new ImageGallery(galleryGrid, selectionCount);
+    const cropSelector      = new CropSelector(videoPlayer.getVideoElement());
     cropSelector.init();
+    const extractionManager = new ExtractionManager(frameExtractor, cropSelector, imageGallery);
 
     const playRangeButton = document.getElementById('playRangeButton');
     const videoEl = videoPlayer.getVideoElement();
@@ -91,14 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentVideoFileName = '';
     let selectedInterval = 0.2;
-    let isExtracting = false;
-    const MAX_STITCH_HEIGHT = 16384;
     let currentStitchLimit = 0;
 
-    const CUSTOM_INTERVAL_KEY = 'mse_customInterval';
-
     // 保存済みカスタム値を復元
-    const savedCustom = parseFloat(localStorage.getItem(CUSTOM_INTERVAL_KEY));
+    const savedCustom = parseFloat(localStorage.getItem(STORAGE_CUSTOM_INTERVAL_KEY));
     if (!isNaN(savedCustom) && savedCustom >= 0.01) {
         customIntervalInput.value = savedCustom;
     }
@@ -123,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const val = parseFloat(customIntervalInput.value);
         if (!isNaN(val) && val >= 0.01) {
             selectedInterval = val;
-            localStorage.setItem(CUSTOM_INTERVAL_KEY, String(val));
+            localStorage.setItem(STORAGE_CUSTOM_INTERVAL_KEY, String(val));
             updateFrameCount();
         }
     });
@@ -179,16 +176,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 範囲抽出ボタン ---
     extractBtn.addEventListener('click', async () => {
-        if (isExtracting) {
-            frameExtractor.cancel();
+        if (extractionManager.isExtracting) {
+            extractionManager.cancel();
             return;
         }
-        await startExtraction();
+
+        const { startTime, endTime } = timeRangeManager.getRangeSettings();
+        await extractionManager.extract(startTime, endTime, selectedInterval, currentVideoFileName, {
+            onStart: (count) => {
+                captureBtn.disabled = true;
+                extractBtn.querySelector('span').textContent = 'キャンセル';
+                extractBtn.classList.add('btn-cancel');
+                saveZipBtn.disabled = true;
+                stitchBtn.disabled = true;
+                extractionProgress.classList.remove('hidden');
+                updateProgress(0, count);
+                setStatus(`フレームを抽出中... (0/${count}枚)`);
+            },
+            onProgress: (current, total) => {
+                updateProgress(current, total);
+                setStatus(`フレームを抽出中... (${current}/${total}枚)`);
+            },
+            onComplete: ({ total, actualStitchLimit }) => {
+                updateSaveButtons();
+                if (actualStitchLimit !== null) {
+                    currentStitchLimit = actualStitchLimit;
+                    if (stitchLimitValue) stitchLimitValue.textContent = actualStitchLimit;
+                    imageGallery.setStitchLimit(actualStitchLimit);
+                }
+                setStatus(`${total}枚のフレームを抽出しました`);
+            },
+            onError: (msg) => {
+                setStatus(msg);
+            }
+        });
+
+        captureBtn.disabled = false;
+        extractBtn.querySelector('span').textContent = '範囲抽出';
+        extractBtn.classList.remove('btn-cancel');
+        extractionProgress.classList.add('hidden');
+        updateSaveButtons();
     });
 
     // --- 1枚抽出ボタン ---
     captureBtn.addEventListener('click', () => {
-        if (!videoPlayer.isVideoLoaded() || isExtracting) return;
+        if (!videoPlayer.isVideoLoaded() || extractionManager.isExtracting) return;
         const cropRect = cropSelector.getCropRect();
         const frame = frameExtractor.captureCurrentFrame(currentVideoFileName, cropRect);
         imageGallery.addFrame(frame);
@@ -197,86 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateHeaderCounts(total, selected);
         setStatus(`1枚追加しました（${frame.timestamp}）`);
     });
-
-    async function startExtraction() {
-        const range = timeRangeManager.getRangeSettings();
-        const { startTime, endTime } = range;
-
-        if (selectedInterval < 0.01) {
-            setStatus('抽出間隔を正しく設定してください');
-            return;
-        }
-
-        const count = frameExtractor.calculateFrameCount(startTime, endTime, selectedInterval);
-
-        if (count === 0) {
-            setStatus('抽出できるフレームがありません。動画範囲を確認してください');
-            return;
-        }
-
-        if (count > MAX_FRAMES) {
-            setStatus(`抽出枚数が上限（${MAX_FRAMES}枚）を超えています（計算値: ${count}枚）`);
-            return;
-        }
-
-        if (!confirm('実行しますか？')) return;
-
-        isExtracting = true;
-        captureBtn.disabled = true;
-        extractBtn.querySelector('span').textContent = 'キャンセル';
-        extractBtn.classList.add('btn-cancel');
-        saveZipBtn.disabled = true;
-        stitchBtn.disabled = true;
-        extractionProgress.classList.remove('hidden');
-        imageGallery.clear();
-        updateProgress(0, count);
-        setStatus(`フレームを抽出中... (0/${count}枚)`);
-
-        try {
-            await frameExtractor.extractRange(
-                startTime, endTime, selectedInterval, currentVideoFileName,
-                {
-                    onFrame: (frame) => {
-                        imageGallery.addFrame(frame);
-                    },
-                    onProgress: (current, total) => {
-                        updateProgress(current, total);
-                        setStatus(`フレームを抽出中... (${current}/${total}枚)`);
-                    },
-                    cropRect: cropSelector.getCropRect()
-                }
-            );
-
-            imageGallery.selectAll();
-            updateSaveButtons();
-            const { total } = imageGallery.getCounts();
-
-            // 実フレームの高さで上限を再計算（iOS回転補正ずれ対策）
-            const firstFrames = imageGallery.getSelectedFrames();
-            if (firstFrames.length > 0) {
-                const img = await loadImage(firstFrames[0].dataUrl);
-                const actualLimit = img.naturalHeight > 0
-                    ? Math.floor(MAX_STITCH_HEIGHT / img.naturalHeight)
-                    : currentStitchLimit;
-                currentStitchLimit = actualLimit;
-                if (stitchLimitValue) stitchLimitValue.textContent = actualLimit;
-                imageGallery.setStitchLimit(actualLimit);
-            }
-
-            setStatus(`${total}枚のフレームを抽出しました`);
-
-        } catch (e) {
-            logError('抽出エラー', e);
-            setStatus('抽出中にエラーが発生しました');
-        } finally {
-            isExtracting = false;
-            captureBtn.disabled = false;
-            extractBtn.querySelector('span').textContent = '範囲抽出';
-            extractBtn.classList.remove('btn-cancel');
-            extractionProgress.classList.add('hidden');
-            updateSaveButtons();
-        }
-    }
 
     // --- 保存前処理（タイムスタンプ焼き込み）---
     async function prepareFramesForExport(frames) {
@@ -298,6 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- 縦結合ボタン ---
+    const stitchProcessor = new StitchProcessor();
     stitchBtn.addEventListener('click', async () => {
         const frames = imageGallery.getSelectedFrames();
         if (frames.length === 0) {
@@ -306,67 +259,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         stitchBtn.disabled = true;
         try {
-            await stitchVertically(frames);
+            await stitchProcessor.stitch(frames, currentVideoFileName, setStatus);
         } finally {
             updateSaveButtons();
         }
     });
-
-    async function stitchVertically(frames) {
-        const firstImg = await loadImage(frames[0].dataUrl);
-        const frameW = firstImg.naturalWidth;
-        const frameH = firstImg.naturalHeight;
-        const maxCount = frameH > 0 ? Math.floor(MAX_STITCH_HEIGHT / frameH) : frames.length;
-
-        const chunks = [];
-        for (let i = 0; i < frames.length; i += maxCount) {
-            chunks.push(frames.slice(i, i + maxCount));
-        }
-
-        const baseName = getFileNameWithoutExtension(currentVideoFileName) || 'frames';
-        const blobs = [];
-
-        for (let c = 0; c < chunks.length; c++) {
-            const chunk = chunks[c];
-            const canvas = document.createElement('canvas');
-            canvas.width = frameW;
-            canvas.height = frameH * chunk.length;
-            const ctx = canvas.getContext('2d');
-
-            for (let i = 0; i < chunk.length; i++) {
-                const img = (c === 0 && i === 0) ? firstImg : await loadImage(chunk[i].dataUrl);
-                ctx.drawImage(img, 0, i * frameH);
-                setStatus(`縦結合中... (${c + 1}/${chunks.length}ファイル目、${i + 1}/${chunk.length}枚)`);
-            }
-
-            const blob = await new Promise(resolve => {
-                canvas.toBlob(resolve, 'image/jpeg', JPEG_QUALITY);
-            });
-            blobs.push(blob);
-        }
-
-        if (blobs.length === 1) {
-            saveAs(blobs[0], `${baseName}_stitched.jpg`);
-            setStatus(`縦結合画像を保存しました（計${frames.length}枚）`);
-        } else {
-            const zip = new JSZip();
-            blobs.forEach((blob, i) => {
-                zip.file(`${baseName}_stitched_${i + 1}.jpg`, blob);
-            });
-            const zipBlob = await zip.generateAsync({ type: 'blob' });
-            saveAs(zipBlob, `${baseName}_stitched.zip`);
-            setStatus(`縦結合画像をZIPで保存しました（${blobs.length}ファイル、計${frames.length}枚）`);
-        }
-    }
-
-    function loadImage(src) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = src;
-        });
-    }
 
     // --- ギャラリー選択ボタン ---
     selectAllBtn.addEventListener('click', () => {
@@ -381,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     imageGallery.onSelectionChange(({ total, selected }) => {
         updateHeaderCounts(total, selected);
-        if (!isExtracting) {
+        if (!extractionManager.isExtracting) {
             saveZipBtn.disabled = selected === 0;
             stitchBtn.disabled = selected === 0;
         }
@@ -433,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        setStatus('元動画を再保存する（範囲・クロップは未適用）');
+        setStatus('元動画を再保存');
     });
 
     // disabled / is-cancel 状態を元ボタンから同期
@@ -453,13 +350,13 @@ document.addEventListener('DOMContentLoaded', () => {
         [headerFileBtn,    '動画ファイルを選択します', null],
         [headerExtractBtn, '範囲抽出: 設定した間隔でフレームを抽出します', 'キャンセル: 抽出を中断します'],
         [headerStitchBtn,  '縦結合: 選択中の画像を縦に並べて保存します', null],
-        [headerSaveZipBtn, '元動画を再保存する（範囲・クロップは未適用）', null],
+        [headerSaveZipBtn, '元動画を再保存（範囲・クロップ未適用）', null],
         [reloadBtnEl,      'リロード: アプリをリセットします（抽出データが消えます）', null],
     ];
     tooltips.forEach(([btn, desc, cancelDesc]) => {
         btn.addEventListener('mouseenter', () => {
             savedStatus = statusText.textContent;
-            statusText.textContent = (cancelDesc && isExtracting) ? cancelDesc : desc;
+            statusText.textContent = (cancelDesc && extractionManager.isExtracting) ? cancelDesc : desc;
         });
         btn.addEventListener('mouseleave', () => {
             statusText.textContent = savedStatus;
@@ -478,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateExtractBtn() {
         const loaded = videoPlayer.isVideoLoaded();
-        captureBtn.disabled = !loaded || isExtracting;
+        captureBtn.disabled = !loaded || extractionManager.isExtracting;
         headerSaveZipBtn.disabled = !loaded;
         if (!loaded) {
             extractBtn.disabled = true;
@@ -486,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const range = timeRangeManager.getRangeSettings();
         const valid = range.endTime > range.startTime;
-        extractBtn.disabled = !valid || isExtracting;
+        extractBtn.disabled = !valid || extractionManager.isExtracting;
     }
 
     function updateSaveButtons() {
