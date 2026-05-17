@@ -52,15 +52,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoEl = videoPlayer.getVideoElement();
 
     // --- 動画エリア長押しで新しいタブに開く（iOS: 共有シートから保存） ---
+    // touchstart 時点で開いてユーザー操作と認識させ、短押しなら閉じる
     let longPressTimer = null;
+    let longPressWindow = null;
     videoEl.addEventListener('touchstart', () => {
         if (!fileHandler.currentFile.fileURL) return;
+        longPressWindow = window.open(fileHandler.currentFile.fileURL, '_blank');
         longPressTimer = setTimeout(() => {
-            window.open(fileHandler.currentFile.fileURL, '_blank');
+            longPressWindow = null;
         }, 600);
     }, { passive: true });
-    videoEl.addEventListener('touchend',  () => clearTimeout(longPressTimer));
-    videoEl.addEventListener('touchmove', () => clearTimeout(longPressTimer));
+    const cancelLongPress = () => {
+        clearTimeout(longPressTimer);
+        if (longPressWindow) { longPressWindow.close(); longPressWindow = null; }
+    };
+    videoEl.addEventListener('touchend',  cancelLongPress);
+    videoEl.addEventListener('touchmove', cancelLongPress);
 
     function syncRangePlayBtn() {
         if (!playRangeButton) return;
