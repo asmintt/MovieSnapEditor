@@ -417,8 +417,13 @@ document.addEventListener('DOMContentLoaded', () => {
     headerStitchBtn.addEventListener('click', () => stitchBtn.click());
     headerSaveZipBtn.addEventListener('click', () => {
         if (!fileHandler.currentFile.fileURL) return;
-        window.open(fileHandler.currentFile.fileURL, '_blank');
-        setStatus('元動画を再保存する: 開いたタブで共有ボタン →「写真に保存」を選択してください');
+        const a = document.createElement('a');
+        a.href = fileHandler.currentFile.fileURL;
+        a.download = fileHandler.currentFile.fileName || 'video';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setStatus('元動画を再保存する（範囲・クロップは未適用）');
     });
 
     // disabled / is-cancel 状態を元ボタンから同期
