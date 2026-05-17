@@ -418,21 +418,21 @@ document.addEventListener('DOMContentLoaded', () => {
     headerSaveZipBtn.addEventListener('click', async () => {
         const { file, fileName } = fileHandler.currentFile;
         if (!file) return;
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        if (navigator.share) {
             try {
                 await navigator.share({ files: [file], title: fileName });
+                return;
             } catch (e) {
-                if (e.name !== 'AbortError') setStatus('共有に失敗しました');
+                if (e.name === 'AbortError') return;
             }
-        } else {
-            // フォールバック: ダウンロード
-            const a = document.createElement('a');
-            a.href = fileHandler.currentFile.fileURL;
-            a.download = fileName || 'video';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
         }
+        // フォールバック: ダウンロード
+        const a = document.createElement('a');
+        a.href = fileHandler.currentFile.fileURL;
+        a.download = fileName || 'video';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         setStatus('元動画を再保存する（範囲・クロップは未適用）');
     });
 
