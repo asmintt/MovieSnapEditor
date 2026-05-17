@@ -2,8 +2,6 @@
  * cropSelector.js - クロップ範囲選択・管理
  */
 
-const CROP_DEFAULT_KEY = 'mse_cropDefault';
-
 class CropSelector {
     #videoEl;
     #overlayEl;
@@ -25,9 +23,11 @@ class CropSelector {
     #resetBtn;
 
     #drag = null;
+    #transformer;
 
     constructor(videoEl) {
         this.#videoEl = videoEl;
+        this.#transformer = new CoordinateTransformer(videoEl);
     }
 
     init() {
@@ -143,63 +143,11 @@ class CropSelector {
         window.addEventListener('resize', () => { if (this.#enabled) this.#syncToOverlay(); });
     }
 
-    // 動画コンテンツのレンダリング領域（レターボックス対応）
-    #getVideoRenderRect() {
-        const el = this.#videoEl;
-        const ew = el.clientWidth;
-        const eh = el.clientHeight;
-        const vw = el.videoWidth  || ew;
-        const vh = el.videoHeight || eh;
-
-        const elAspect    = ew / eh;
-        const videoAspect = vw / vh;
-
-        let renderW, renderH, offsetX, offsetY;
-        if (videoAspect > elAspect) {
-            renderW = ew;
-            renderH = ew / videoAspect;
-            offsetX = 0;
-            offsetY = (eh - renderH) / 2;
-        } else {
-            renderH = eh;
-            renderW = eh * videoAspect;
-            offsetX = (ew - renderW) / 2;
-            offsetY = 0;
-        }
-        return { x: offsetX, y: offsetY, w: renderW, h: renderH };
-    }
-
-    // 表示座標（レンダリング領域内）→ 実ピクセル
-    #displayToReal(dx, dy, dw, dh) {
-        const r  = this.#getVideoRenderRect();
-        const vw = this.#videoEl.videoWidth  || 1;
-        const vh = this.#videoEl.videoHeight || 1;
-        return {
-            x: Math.round(dx / r.w * vw),
-            y: Math.round(dy / r.h * vh),
-            w: Math.round(dw / r.w * vw),
-            h: Math.round(dh / r.h * vh)
-        };
-    }
-
-    // 実ピクセル → 表示座標（レンダリング領域内）
-    #realToDisplay() {
-        const r  = this.#getVideoRenderRect();
-        const vw = this.#videoEl.videoWidth  || 1;
-        const vh = this.#videoEl.videoHeight || 1;
-        return {
-            x: this.#rect.x / vw * r.w,
-            y: this.#rect.y / vh * r.h,
-            w: this.#rect.w / vw * r.w,
-            h: this.#rect.h / vh * r.h
-        };
-    }
-
     #startDrag(clientX, clientY, type) {
         const overlayRect = this.#overlayEl.getBoundingClientRect();
         const relX = clientX - overlayRect.left;
         const relY = clientY - overlayRect.top;
-        this.#drag = { type, startX: relX, startY: relY, startCrop: { ...this.#realToDisplay() } };
+        this.#drag = { type, startX: relX, startY: relY, startCrop: { ...this.#transformer.realToDisplay(this.#rect) } };
     }
 
     #onDragMove(clientX, clientY) {
@@ -233,7 +181,7 @@ class CropSelector {
         nx = Math.max(0, Math.min(nx, rw - nw));
         ny = Math.max(0, Math.min(ny, rh - nh));
 
-        this.#rect = this.#displayToReal(nx, ny, nw, nh);
+        this.#rect = this.#transformer.displayToReal(nx, ny, nw, nh);
         this.#syncToInputs();
         this.#syncToOverlay();
     }
@@ -249,7 +197,7 @@ class CropSelector {
         // オーバーレイをビデオのレンダリング領域に重ねる
         const videoRect     = this.#videoEl.getBoundingClientRect();
         const containerRect = this.#videoEl.parentElement.getBoundingClientRect();
-        const renderRect    = this.#getVideoRenderRect();
+        const renderRect    = this.#transformer.getVideoRenderRect();
 
         const ol = videoRect.left - containerRect.left + renderRect.x;
         const ot = videoRect.top  - containerRect.top  + renderRect.y;
@@ -262,7 +210,7 @@ class CropSelector {
         this.#overlayEl.style.height = `${oh}px`;
 
         // クロップ枠の表示座標
-        const d = this.#realToDisplay();
+        const d = this.#transformer.realToDisplay(this.#rect);
 
         // 暗幕4枚を配置
         this.#maskTop.style.cssText    = `top:0;left:0;right:0;height:${d.y}px`;
@@ -341,7 +289,7 @@ class CropSelector {
 
     #saveDefault() {
         localStorage.setItem(
-            CROP_DEFAULT_KEY,
+            STORAGE_CROP_DEFAULT_KEY,
             JSON.stringify({ enabled: this.#enabled, ...this.#rect })
         );
         logInfo('CropSelector: 初期値を保存しました', this.#rect);
@@ -358,7 +306,7 @@ class CropSelector {
 
     #loadDefault() {
         try {
-            const raw = localStorage.getItem(CROP_DEFAULT_KEY);
+            const raw = localStorage.getItem(STORAGE_CROP_DEFAULT_KEY);
             return raw ? JSON.parse(raw) : null;
         } catch { return null; }
     }

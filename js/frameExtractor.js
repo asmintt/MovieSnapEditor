@@ -24,7 +24,7 @@ class FrameExtractor {
             const timeout = setTimeout(() => {
                 this.#videoElement.removeEventListener('seeked', onSeeked);
                 reject(new Error('seekタイムアウト'));
-            }, 8000);
+            }, FRAME_SEEK_TIMEOUT_MS);
 
             const onSeeked = () => {
                 clearTimeout(timeout);
