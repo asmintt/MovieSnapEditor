@@ -415,7 +415,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // クリックをサイドバーの元ボタンに委譲
     headerExtractBtn.addEventListener('click', () => extractBtn.click());
     headerStitchBtn.addEventListener('click', () => stitchBtn.click());
-    headerSaveZipBtn.addEventListener('click', () => saveZipBtn.click());
+    headerSaveZipBtn.addEventListener('click', () => {
+        if (!fileHandler.currentFile.fileURL) return;
+        window.open(fileHandler.currentFile.fileURL, '_blank');
+        setStatus('元動画を再保存する: 開いたタブで共有ボタン →「写真に保存」を選択してください');
+    });
 
     // disabled / is-cancel 状態を元ボタンから同期
     function syncHeaderBtn(source, mirror) {
@@ -427,7 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     syncHeaderBtn(extractBtn, headerExtractBtn);
     syncHeaderBtn(stitchBtn, headerStitchBtn);
-    syncHeaderBtn(saveZipBtn, headerSaveZipBtn);
 
     // フッタートゥールチップ（マウスオーバー時に説明を表示）
     let savedStatus = '';
@@ -435,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
         [headerFileBtn,    '動画ファイルを選択します', null],
         [headerExtractBtn, '範囲抽出: 設定した間隔でフレームを抽出します', 'キャンセル: 抽出を中断します'],
         [headerStitchBtn,  '縦結合: 選択中の画像を縦に並べて保存します', null],
-        [headerSaveZipBtn, '一括保存: 選択中の画像をZIPでダウンロードします', null],
+        [headerSaveZipBtn, '元動画を再保存する（範囲・クロップは未適用）', null],
         [reloadBtnEl,      'リロード: アプリをリセットします（抽出データが消えます）', null],
     ];
     tooltips.forEach(([btn, desc, cancelDesc]) => {
@@ -461,6 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateExtractBtn() {
         const loaded = videoPlayer.isVideoLoaded();
         captureBtn.disabled = !loaded || isExtracting;
+        headerSaveZipBtn.disabled = !loaded;
         if (!loaded) {
             extractBtn.disabled = true;
             return;
